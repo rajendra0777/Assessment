@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:saasquatch_leads}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:caprae_admin}
+    password: ${DB_PASSWORD}   # required, no default: supply via environment or secrets manager
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false

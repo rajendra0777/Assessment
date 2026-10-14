@@ -1,0 +1,14 @@
+# Build output
+target/
+*.jar
+*.class
+# Secrets
+.env
+*.pem
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+# Logs
+*.log

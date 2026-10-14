@@ -1,0 +1,50 @@
+# Usage: cp .env.example .env  (edit the values), then: docker compose up --build
+services:
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: caprae-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: saasquatch_leads
+      POSTGRES_USER: caprae_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    # No published port: the database is reachable only from the app container.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U caprae_admin -d saasquatch_leads"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  saasquatch-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saasquatch-leadgen-pro
+    restart: unless-stopped
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DB_HOST: postgres-db
+      DB_PORT: 5432
+      DB_NAME: saasquatch_leads
+      DB_USER: caprae_admin
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      SEED_PASSWORD: ${SEED_PASSWORD:?Set SEED_PASSWORD in .env}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:8080}
+      SCRAPER_CONTACT_URL: ${SCRAPER_CONTACT_URL:-https://example.com/bot-info}
+      SERVER_PORT: 8080
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:

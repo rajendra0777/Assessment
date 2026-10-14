@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaSquatch LeadGen Pro | Caprae Capital Partners</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%200%20100%20100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+    <!-- Top Navigation Bar with RBAC & Auth -->
+    <header class="navbar">
+        <div class="nav-brand" id="brand-home-link" title="Click to return to Deal Pipeline Home" style="cursor: pointer;">
+            <div class="logo-badge">
+                <span class="logo-icon">▲</span>
+            </div>
+            <div>
+                <div class="brand-title">CAPRAE CAPITAL</div>
+                <div class="brand-subtitle">SaaSquatch DealGen &amp; ETA Intelligence Engine</div>
+            </div>
+        </div>
+
+        <nav class="nav-links">
+            <button class="nav-tab active" data-tab="pipeline-tab">Deal Pipeline</button>
+            <button class="nav-tab" data-tab="scraper-tab">Real-Time Sourcing</button>
+            <button class="nav-tab" data-tab="copilot-tab">AI Deal Copilot</button>
+            <button class="nav-tab" data-tab="outreach-tab">Outreach Studio</button>
+            <button class="nav-tab" data-tab="analytics-tab">Pipeline Analytics</button>
+            <button class="nav-tab" data-tab="api-tab">API &amp; Docs</button>
+        </nav>
+
+        <div class="nav-actions">
+            <!-- User Status & Role Badge -->
+            <div class="user-pill" id="user-pill-container" title="Manage Session">
+                <span class="user-dot"></span>
+                <span id="nav-user-name">Kevin Hong</span>
+                <span class="role-badge" id="nav-user-role">ADMIN</span>
+            </div>
+            <button id="btn-auth-action" class="btn btn-ghost btn-sm" title="Sign Out">Sign Out</button>
+            <a href="/swagger-ui.html" target="_blank" class="btn btn-outline btn-sm">Swagger UI ↗</a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+
+        <!-- KPI Summary Cards -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">TOTAL SOURCED TARGETS</div>
+                <div class="kpi-value" id="kpi-total-leads">--</div>
+                <div class="kpi-sub"><span class="trend-up">▲ Active</span> proprietary pipeline</div>
+            </div>
+            <div class="kpi-card highlight-card">
+                <div class="kpi-label">PIPELINE DEAL VALUE (ARR)</div>
+                <div class="kpi-value" id="kpi-pipeline-rev">--</div>
+                <div class="kpi-sub"><span class="trend-gold">★ $5.2M</span> avg deal size</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">AVG DEAL READINESS SCORE</div>
+                <div class="kpi-value" id="kpi-avg-score">--</div>
+                <div class="kpi-sub">Caprae ETA qualification index</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">ACTIVE IN PIPELINE</div>
+                <div class="kpi-value" id="kpi-qualified-leads">--</div>
+                <div class="kpi-sub" id="kpi-diligence-sub">Qualified &amp; In Diligence</div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: DEAL PIPELINE (KANBAN & TABLE VIEW) -->
+        <!-- ========================================== -->
+        <section id="pipeline-tab" class="tab-content active">
+            <div class="card glass-card">
+                <div class="card-header flex-between">
+                    <div>
+                        <h2>Proprietary Deal Pipeline</h2>
+                        <p class="subtitle">Real-time M&amp;A funnel with drag-and-drop stages, 3-dot CRUD actions, full deal descriptions &amp; pagination</p>
+                    </div>
+                    <div class="btn-group">
+                        <!-- View Toggle -->
+                        <div class="view-toggle-group">
+                            <button id="btn-view-kanban" class="btn-view-toggle active" title="Kanban Board View">☷ Board</button>
+                            <button id="btn-view-table" class="btn-view-toggle" title="Table View">☰ Table</button>
+                        </div>
+                        <button id="btn-export-csv" class="btn btn-secondary">
+                            <span>📥</span> Export CSV
+                        </button>
+                        <button id="btn-export-json" class="btn btn-secondary">
+                            <span>📄</span> Export JSON
+                        </button>
+                        <button id="btn-open-create-modal" class="btn btn-primary">
+                            <span>+</span> Add Custom Deal
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters & Universal Search Bar -->
+                <div class="filters-bar">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="filter-search" placeholder="Search by deal ID (e.g. CP-1001), company, domain, region/location, tech stack...">
+                    </div>
+                    <select id="filter-industry" class="filter-select">
+                        <option value="">All Industries</option>
+                        <option value="B2B SaaS">B2B SaaS</option>
+                        <option value="DevOps & Cloud">DevOps &amp; Cloud</option>
+                        <option value="FinTech Infrastructure">FinTech Infrastructure</option>
+                        <option value="Healthcare IT">Healthcare IT</option>
+                        <option value="Supply Chain & Logistics">Supply Chain &amp; Logistics</option>
+                        <option value="Cybersecurity">Cybersecurity</option>
+                    </select>
+                    <select id="filter-status" class="filter-select">
+                        <option value="">All Stages</option>
+                        <option value="SOURCED">Sourced</option>
+                        <option value="QUALIFIED">Qualified</option>
+                        <option value="DILIGENCE">In Diligence</option>
+                        <option value="LOI_SUBMITTED">LOI Submitted</option>
+                        <option value="CLOSED">Closed</option>
+                    </select>
+                    <select id="filter-priority" class="filter-select">
+                        <option value="">All Priorities</option>
+                        <option value="HOT">🔥 HOT Deals</option>
+                        <option value="WARM">⚡ WARM Deals</option>
+                        <option value="COLD">❄️ COLD Deals</option>
+                    </select>
+                    <div class="score-filter-wrapper">
+                        <label for="filter-min-score">Min Score: <span id="score-val-label">0</span></label>
+                        <input type="range" id="filter-min-score" min="0" max="95" value="0" step="5">
+                    </div>
+                    <button id="btn-reset-filters" class="btn btn-ghost btn-sm">Reset</button>
+                </div>
+
+                <!-- KANBAN BOARD VIEW (With Drag-and-Drop) -->
+                <div id="kanban-view" class="kanban-board">
+                    <!-- Column 1: Sourced -->
+                    <div class="kanban-col" data-stage="SOURCED">
+                        <div class="kanban-col-header">
+                            <span class="col-title">1. SOURCED</span>
+                            <span class="col-count" id="count-sourced">0</span>
+                        </div>
+                        <div class="kanban-col-body" id="col-sourced" data-stage="SOURCED"></div>
+                    </div>
+
+                    <!-- Column 2: Qualified -->
+                    <div class="kanban-col" data-stage="QUALIFIED">
+                        <div class="kanban-col-header">
+                            <span class="col-title">2. QUALIFIED</span>
+                            <span class="col-count" id="count-qualified">0</span>
+                        </div>
+                        <div class="kanban-col-body" id="col-qualified" data-stage="QUALIFIED"></div>
+                    </div>
+
+                    <!-- Column 3: In Diligence -->
+                    <div class="kanban-col" data-stage="DILIGENCE">
+                        <div class="kanban-col-header">
+                            <span class="col-title">3. IN DILIGENCE</span>
+                            <span class="col-count" id="count-diligence">0</span>
+                        </div>
+                        <div class="kanban-col-body" id="col-diligence" data-stage="DILIGENCE"></div>
+                    </div>
+
+                    <!-- Column 4: LOI Submitted -->
+                    <div class="kanban-col" data-stage="LOI_SUBMITTED">
+                        <div class="kanban-col-header">
+                            <span class="col-title">4. LOI SUBMITTED</span>
+                            <span class="col-count" id="count-loi">0</span>
+                        </div>
+                        <div class="kanban-col-body" id="col-loi" data-stage="LOI_SUBMITTED"></div>
+                    </div>
+
+                    <!-- Column 5: Closed -->
+                    <div class="kanban-col" data-stage="CLOSED">
+                        <div class="kanban-col-header">
+                            <span class="col-title">5. CLOSED / ACQUIRED</span>
+                            <span class="col-count" id="count-closed">0</span>
+                        </div>
+                        <div class="kanban-col-body" id="col-closed" data-stage="CLOSED"></div>
+                    </div>
+                </div>
+
+                <!-- TABLE VIEW (With 3-dot CRUD actions) -->
+                <div id="table-view" class="table-container hidden">
+                    <table class="leads-table">
+                        <thead>
+                            <tr>
+                                <th>DEAL ID</th>
+                                <th>COMPANY &amp; REGION</th>
+                                <th>INDUSTRY</th>
+                                <th>ARR / EBITDA</th>
+                                <th>WIN % &amp; PRIORITY</th>
+                                <th>DEAL STAGE</th>
+                                <th>DEAL SCORE</th>
+                                <th style="text-align: right;">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leads-table-body">
+                            <tr>
+                                <td colspan="8" class="loading-cell">Loading deal pipeline...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- PAGINATION BAR -->
+                <div class="pagination-bar" id="pipeline-pagination-bar">
+                    <div class="pagination-info">
+                        Showing <strong id="pagination-start">0</strong>–<strong id="pagination-end">0</strong> of <strong id="pagination-total">0</strong> deals
+                    </div>
+                    <div class="pagination-controls">
+                        <label for="pagination-page-size" class="page-size-label">Per page:</label>
+                        <select id="pagination-page-size" class="filter-select page-size-select">
+                            <option value="10" selected>10 entries</option>
+                            <option value="20">20 entries</option>
+                            <option value="50">50 entries</option>
+                            <option value="1000">All entries</option>
+                        </select>
+                        <button id="btn-page-prev" class="btn btn-ghost btn-sm" disabled>&larr; Prev</button>
+                        <div id="pagination-numbers" class="pagination-numbers"></div>
+                        <button id="btn-page-next" class="btn btn-ghost btn-sm">Next &rarr;</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: REAL-TIME WEB SOURCING & PROMPT SCRAPING -->
+        <!-- ========================================== -->
+        <section id="scraper-tab" class="tab-content">
+            <!-- Stage Distribution & Radar Banner -->
+            <div class="sourcing-overview-grid">
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h3>🔥 High-Potential Upcoming Deals Radar</h3>
+                        <p class="subtitle">Top prospective off-market targets identified with high win probability</p>
+                    </div>
+                    <div id="upcoming-deals-radar" class="upcoming-radar-list"></div>
+                </div>
+
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h3>📊 Active Sourced Pipeline Distribution</h3>
+                        <p class="subtitle">Real-time status breakdown across deal stages</p>
+                    </div>
+                    <div id="sourcing-stage-distribution" class="progress-list"></div>
+                </div>
+            </div>
+
+            <!-- AI-Assisted Prompt Scraper Card -->
+            <div class="card glass-card" style="margin-top: 24px;">
+                <div class="card-header">
+                    <div class="badge-tag">AI-ASSISTED SCRAPER COPILOT</div>
+                    <h2>Real-Time Live Web Search &amp; Investment Sourcing</h2>
+                    <p class="subtitle">Type your PE acquisition thesis in natural English. SaaSquatch executes real-time browser search and DOM inspection to return refined, investment-grade candidate deals.</p>
+                </div>
+
+                <!-- Prompt Input Bar -->
+                <div class="ai-prompt-bar">
+                    <span class="ai-sparkle">✨</span>
+                    <input type="text" id="ai-scraper-prompt-input" placeholder="e.g. Find profitable B2B cybersecurity SaaS in Texas with $2M–$5M ARR using AWS and Stripe...">
+                    <button id="btn-run-prompt-scrape" class="btn btn-primary">
+                        <span>⚡</span> Run Real-Time Search &amp; Scrape
+                    </button>
+                </div>
+
+                <div class="quick-prompt-chips">
+                    <span class="chip-label">Quick Prompts:</span>
+                    <button class="prompt-chip" data-prompt="Find high-margin Healthcare EHR platforms in West Coast with over $2M revenue">Healthcare EHR West Coast</button>
+                    <button class="prompt-chip" data-prompt="Scrape DevTools and cloud infrastructure platforms using Stripe and React">DevTools &amp; Cloud Infra</button>
+                    <button class="prompt-chip" data-prompt="Search for supply chain logistics tech platforms in Midwest with >$4M revenue">Midwest Supply Chain</button>
+                    <button class="prompt-chip" data-prompt="Find FinTech treasury management software using AWS and Plaid">FinTech Treasury Management</button>
+                </div>
+
+                <div class="divider-text"><span>OR SEARCH MANUALLY BY TARGET ATTRIBUTES</span></div>
+
+                <!-- Structured Form -->
+                <div class="scraper-form-grid-3">
+                    <div class="input-group">
+                        <label for="scrape-target">Target Domain or Specific Company URL</label>
+                        <input type="text" id="scrape-target" placeholder="e.g. postman.com, cloudflare.com, or vercel.com" value="postman.com">
+                    </div>
+                    <div class="input-group">
+                        <label for="scrape-industry">Industry Taxonomy</label>
+                        <input type="text" id="scrape-industry" placeholder="e.g. Developer Tools, B2B SaaS" value="Developer Tools">
+                    </div>
+                    <div class="input-group">
+                        <label for="scrape-region">Target Region / Geography</label>
+                        <select id="scrape-region" class="filter-select">
+                            <option value="North America">North America (All)</option>
+                            <option value="North America - West Coast">West Coast (CA, WA, OR)</option>
+                            <option value="North America - Texas">Texas / South</option>
+                            <option value="North America - East Coast">East Coast (NY, MA, FL)</option>
+                            <option value="Europe">Europe / UK</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="options-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="scrape-autosave" checked>
+                        <span>Auto-commit extracted leads into deal database</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="scrape-ai-eval" checked>
+                        <span>Run AI Deal Readiness &amp; 7-Year Growth Thesis generation</span>
+                    </label>
+                    <button id="btn-run-scrape" class="btn btn-secondary">
+                        <span id="scrape-btn-icon">🌐</span> Execute Live Domain Scrape
+                    </button>
+                </div>
+
+                <!-- Scraper Terminal Output -->
+                <div id="scrape-terminal" class="terminal-box hidden">
+                    <div class="terminal-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                        <span class="terminal-title">SaaSquatch Real-Time Search &amp; Extraction Engine</span>
+                    </div>
+                    <pre id="terminal-output" class="terminal-body"></pre>
+                </div>
+
+                <!-- Scrape Results Container -->
+                <div id="scrape-results-container" class="scrape-results-wrapper"></div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: AI DEAL COPILOT (RAG, MARKET, FINANCE) -->
+        <!-- ========================================== -->
+        <section id="copilot-tab" class="tab-content">
+            <!-- Top AI Nav Tabs -->
+            <div class="sub-nav-tabs">
+                <button class="sub-tab active" data-subtab="subtab-rag">🔍 Real-Time RAG Database Lookup</button>
+                <button class="sub-tab" data-subtab="subtab-market">📈 Industry Market Research</button>
+                <button class="sub-tab" data-subtab="subtab-finance">💰 A-to-Z Financial Model &amp; Valuations</button>
+            </div>
+
+            <!-- SUBTAB 1: RAG DATABASE LOOKUP -->
+            <div id="subtab-rag" class="subtab-content active">
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>RAG Deal Flow Query Engine</h2>
+                        <p class="subtitle">Search your proprietary deal database in natural language with automated semantic retrieval and executive synthesis</p>
+                    </div>
+
+                    <div class="ai-prompt-bar">
+                        <span class="ai-sparkle">🤖</span>
+                        <input type="text" id="rag-query-input" placeholder="e.g. Which DevOps deals have EBITDA over $1M? or Find targets suitable for roll-up strategy..." value="Which companies are in diligence or qualified with over $3M ARR?">
+                        <button id="btn-run-rag" class="btn btn-primary">
+                            <span>⚡</span> Execute RAG Query
+                        </button>
+                    </div>
+
+                    <div id="rag-response-card" class="eval-card hidden" style="margin-top: 20px;">
+                        <div class="thesis-box" style="background: rgba(16, 185, 129, 0.05); border-color: var(--accent-green);">
+                            <h4 style="color: var(--accent-green);">AI RAG Synthesis Report</h4>
+                            <div id="rag-synthesis-body" class="markdown-preview">--</div>
+                        </div>
+                        <h4 style="margin: 16px 0 8px 0; font-size: 13px; color: var(--text-muted);">RETRIEVED DEALS FROM DATABASE</h4>
+                        <div id="rag-retrieved-deals" class="grid-2-col"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBTAB 2: MARKET RESEARCH & TAM -->
+            <div id="subtab-market" class="subtab-content">
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>Industry Market Research &amp; Benchmark Studio</h2>
+                        <p class="subtitle">Real-time TAM/SAM analysis, EBITDA multiple benchmarks, and Caprae roll-up playbooks</p>
+                    </div>
+
+                    <div class="filters-bar" style="max-width: 500px;">
+                        <select id="market-research-industry-select" class="filter-select w-100">
+                            <option value="B2B SaaS">B2B SaaS Enterprise</option>
+                            <option value="DevOps & Cloud">DevOps &amp; Cloud Infrastructure</option>
+                            <option value="FinTech Infrastructure">FinTech &amp; Treasury Software</option>
+                            <option value="Healthcare IT">Healthcare IT &amp; Medical Billing</option>
+                            <option value="Supply Chain & Logistics">Supply Chain &amp; Logistics Tech</option>
+                            <option value="Cybersecurity">Cybersecurity &amp; Compliance</option>
+                        </select>
+                        <button id="btn-run-market-research" class="btn btn-primary">Generate Research</button>
+                    </div>
+
+                    <div id="market-research-results" class="market-research-box hidden">
+                        <div class="kpi-grid" style="margin-top: 16px;">
+                            <div class="kpi-card">
+                                <div class="kpi-label">ESTIMATED TAM</div>
+                                <div class="kpi-value" style="font-size: 18px;" id="market-tam">--</div>
+                            </div>
+                            <div class="kpi-card highlight-card">
+                                <div class="kpi-label">EBITDA MULTIPLE BENCHMARK</div>
+                                <div class="kpi-value" style="font-size: 18px;" id="market-multiple">--</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">MEDIAN GROSS MARGIN</div>
+                                <div class="kpi-value" style="font-size: 18px;" id="market-margin">--</div>
+                            </div>
+                        </div>
+
+                        <div class="grid-2-col" style="margin-top: 20px;">
+                            <div class="card" style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: var(--radius-md);">
+                                <h4 style="color: var(--accent-cyan); margin-bottom: 8px;">Macroeconomic Tailwinds</h4>
+                                <ul id="market-tailwinds-list" class="styled-list"></ul>
+                            </div>
+                            <div class="card" style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: var(--radius-md);">
+                                <h4 style="color: var(--accent-gold); margin-bottom: 8px;">Caprae 7-Year Roll-Up Playbook</h4>
+                                <ul id="market-rollup-list" class="styled-list"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBTAB 3: A-TO-Z FINANCIAL MODEL -->
+            <div id="subtab-finance" class="subtab-content">
+                <div class="card glass-card">
+                    <div class="card-header">
+                        <h2>A-to-Z Financial Modeling &amp; Acquisition Valuation</h2>
+                        <p class="subtitle">P&amp;L breakdown, Seller Discretionary Earnings (SDE), debt/equity deal structures, and 5-year exit ROI</p>
+                    </div>
+
+                    <div class="filters-bar" style="max-width: 500px;">
+                        <select id="finance-lead-select" class="filter-select w-100"></select>
+                        <button id="btn-load-financial-model" class="btn btn-primary">Generate Financial Model</button>
+                    </div>
+
+                    <div id="financial-model-results" class="eval-card hidden" style="margin-top: 20px;">
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-label">ANNUAL RUN-RATE (ARR)</div>
+                                <div class="kpi-value" id="fin-arr">--</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">GROSS MARGIN</div>
+                                <div class="kpi-value" id="fin-gross-margin" style="color: var(--accent-green);">--</div>
+                            </div>
+                            <div class="kpi-card highlight-card">
+                                <div class="kpi-label">ADJUSTED EBITDA</div>
+                                <div class="kpi-value" id="fin-ebitda">--</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">SELLER DISCRETIONARY EARNINGS (SDE)</div>
+                                <div class="kpi-value" id="fin-sde">--</div>
+                            </div>
+                        </div>
+
+                        <div class="grid-2-col" style="margin-top: 24px;">
+                            <div>
+                                <h3>Acquisition Deal Structures</h3>
+                                <div id="fin-deal-structures-container" class="deal-struct-list"></div>
+                            </div>
+                            <div>
+                                <h3>5-Year Post-Acquisition Exit Projections (Caprae 7-Yr Horizon)</h3>
+                                <div class="card" style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: var(--radius-md);">
+                                    <div class="eval-metric-item" style="margin-bottom: 8px;">
+                                        <div class="metric-title">Projected Year 5 ARR (22% CAGR)</div>
+                                        <div class="metric-val" id="fin-proj-arr">--</div>
+                                    </div>
+                                    <div class="eval-metric-item" style="margin-bottom: 8px;">
+                                        <div class="metric-title">Projected Year 5 EBITDA (35% Margin)</div>
+                                        <div class="metric-val" id="fin-proj-ebitda">--</div>
+                                    </div>
+                                    <div class="eval-metric-item" style="margin-bottom: 8px;">
+                                        <div class="metric-title">Projected Terminal Enterprise Value (8.5x Exit)</div>
+                                        <div class="metric-val" id="fin-proj-exit" style="color: var(--accent-gold);">--</div>
+                                    </div>
+                                    <div class="eval-metric-item">
+                                        <div class="metric-title">Target Return on Invested Capital (MOIC)</div>
+                                        <div class="metric-val" id="fin-proj-moic" style="color: var(--accent-green);">--</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: AI OUTREACH SEQUENCE STUDIO -->
+        <!-- ========================================== -->
+        <section id="outreach-tab" class="tab-content">
+            <div class="card glass-card">
+                <div class="card-header flex-between">
+                    <div>
+                        <div class="badge-tag">FOUNDER OUTREACH ARCHITECTURE</div>
+                        <h2>AI Outreach Sequence Studio</h2>
+                        <p class="subtitle">Draft hyper-personalized 3-touch cold outreach sequences tailored to target executive psychology and ETA acquisition fit</p>
+                    </div>
+                    <div class="btn-group">
+                        <button id="btn-copy-full-sequence" class="btn btn-secondary">
+                            <span>📋</span> Copy Full 3-Touch Sequence
+                        </button>
+                        <button id="btn-download-sequence" class="btn btn-secondary">
+                            <span>💾</span> Export Sequence (.txt)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="outreach-studio-grid">
+                    <!-- Left: Configuration Form -->
+                    <div class="outreach-config-card">
+                        <h4 style="color: var(--accent-gold); margin-bottom: 14px;">Sequence Configuration</h4>
+
+                        <div class="input-group">
+                            <label for="outreach-lead-select">Select Target Deal</label>
+                            <select id="outreach-lead-select" class="filter-select w-100"></select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="outreach-tone">Outreach Persona &amp; Angle</label>
+                            <select id="outreach-tone" class="filter-select w-100">
+                                <option value="CONFIDENTIAL_ACQUISITION">Confidential Acquisition &amp; Succession (Founder friendly)</option>
+                                <option value="PE_GROWTH_PARTNER">Caprae 7-Year Strategic Growth Partner</option>
+                                <option value="CASUAL_FOUNDER_TO_FOUNDER">Operator-to-Operator (Search Fund CEO)</option>
+                                <option value="ALL_CASH_DIRECT">High-Urgency Cash Close (Pre-Approved Debt Facility)</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="outreach-sender">Sender Signature</label>
+                            <input type="text" id="outreach-sender" value="Kevin Hong &amp; Caprae Deal Team" class="w-100">
+                        </div>
+
+                        <div class="outreach-tokens-box">
+                            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Active Dynamic Tokens:</label>
+                            <div class="token-chips">
+                                <span class="token-chip">{{founder_name}}</span>
+                                <span class="token-chip">{{company_name}}</span>
+                                <span class="token-chip">{{arr}}</span>
+                                <span class="token-chip">{{ebitda}}</span>
+                                <span class="token-chip">{{tech_stack}}</span>
+                                <span class="token-chip">{{location}}</span>
+                            </div>
+                        </div>
+
+                        <button id="btn-generate-outreach" class="btn btn-primary w-100 btn-lg" style="margin-top: 18px;">
+                            <span>✉️</span> Generate 3-Touch Sequence
+                        </button>
+                    </div>
+
+                    <!-- Right: 3-Touch Sequence Preview -->
+                    <div class="outreach-sequence-display">
+                        <!-- Touch 1: Day 1 -->
+                        <div class="sequence-step-card">
+                            <div class="step-header flex-between">
+                                <div class="step-title">
+                                    <span class="step-num">Touch 1</span>
+                                    <strong>Day 1 — Confidential Founder Inquiry</strong>
+                                </div>
+                                <button class="btn btn-ghost btn-xs btn-copy-step" data-target="email-body-text">Copy Day 1</button>
+                            </div>
+                            <div class="email-preview-field">
+                                <span class="email-field-tag">Subject:</span>
+                                <div class="subject-box" id="email-subject-line">Select a deal and click generate...</div>
+                            </div>
+                            <textarea id="email-body-text" class="email-body-area" rows="7" readonly placeholder="Day 1 cold email body will appear here..."></textarea>
+                        </div>
+
+                        <!-- Touch 2: Day 3 -->
+                        <div class="sequence-step-card" style="margin-top: 14px;">
+                            <div class="step-header flex-between">
+                                <div class="step-title">
+                                    <span class="step-num">Touch 2</span>
+                                    <strong>Day 3 — Caprae 7-Year Growth Multiple &amp; Succession Angle</strong>
+                                </div>
+                                <button class="btn btn-ghost btn-xs btn-copy-step" data-target="email-day3-body">Copy Day 3</button>
+                            </div>
+                            <div class="email-preview-field">
+                                <span class="email-field-tag">Subject:</span>
+                                <div class="subject-box" id="email-subject-line-2">Re: Succession &amp; 7-year strategic growth</div>
+                            </div>
+                            <textarea id="email-day3-body" class="email-body-area" rows="6" readonly placeholder="Day 3 follow-up email snippet will appear here..."></textarea>
+                        </div>
+
+                        <!-- Touch 3: Day 7 -->
+                        <div class="sequence-step-card" style="margin-top: 14px;">
+                            <div class="step-header flex-between">
+                                <div class="step-title">
+                                    <span class="step-num">Touch 3</span>
+                                    <strong>Day 7 — Friendly Permission-to-Close Follow-Up</strong>
+                                </div>
+                                <button class="btn btn-ghost btn-xs btn-copy-step" data-target="email-day7-body">Copy Day 7</button>
+                            </div>
+                            <textarea id="email-day7-body" class="email-body-area" rows="5" readonly placeholder="Day 7 direct break-up / founder line will appear here..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: PIPELINE ANALYTICS & KPIS -->
+        <!-- ========================================== -->
+        <section id="analytics-tab" class="tab-content">
+            <div class="card glass-card">
+                <div class="card-header flex-between">
+                    <div>
+                        <div class="badge-tag">EXECUTIVE TELEMETRY</div>
+                        <h2>M&amp;A Sourcing &amp; Pipeline Analytics</h2>
+                        <p class="subtitle">Interactive visual telemetry with exact coordinate axes, hover inspection tooltips, and deal conversion velocity</p>
+                    </div>
+                    <div class="btn-group">
+                        <select id="analytics-sort-by" class="filter-select">
+                            <option value="arr">Sort by Revenue (High to Low)</option>
+                            <option value="score">Sort by Deal Score</option>
+                            <option value="probability">Sort by Win Probability</option>
+                            <option value="name">Sort by Company Name</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Charts Row 1 -->
+                <div class="grid-2-col" style="margin-bottom: 24px;">
+                    <!-- Bar Chart: ARR by Industry with Axes & Tooltip -->
+                    <div class="analytics-card">
+                        <div class="chart-header flex-between">
+                            <div>
+                                <h3>📊 Cumulative Pipeline ARR by Industry</h3>
+                                <span class="chart-subtitle">Y-Axis: Total Revenue ($M) • X-Axis: Industry Verticals</span>
+                            </div>
+                            <span class="axis-badge">Hover bars for exact metrics</span>
+                        </div>
+                        <div id="bar-chart-container" class="svg-chart-container"></div>
+                    </div>
+
+                    <!-- Donut / Funnel: Deals by Stage with Axes & Tooltip -->
+                    <div class="analytics-card">
+                        <div class="chart-header flex-between">
+                            <div>
+                                <h3>🍩 Deal Funnel Distribution by Stage</h3>
+                                <span class="chart-subtitle">Active targets per M&amp;A phase with conversion velocity</span>
+                            </div>
+                            <span class="axis-badge">Hover segments for deal count</span>
+                        </div>
+                        <div id="donut-chart-container" class="svg-chart-container flex-center"></div>
+                    </div>
+                </div>
+
+                <!-- Charts Row 2 -->
+                <div class="grid-2-col">
+                    <!-- Scatter / Bubble Chart: EBITDA vs AI Score Matrix with Axes & Tooltip -->
+                    <div class="analytics-card">
+                        <div class="chart-header flex-between">
+                            <div>
+                                <h3>🎯 EBITDA Multiple vs. AI Score Matrix</h3>
+                                <span class="chart-subtitle">Y-Axis: AI Deal Score (0–100) • X-Axis: EBITDA ($M)</span>
+                            </div>
+                            <span class="axis-badge">Hover points for company preview</span>
+                        </div>
+                        <div id="scatter-chart-container" class="svg-chart-container"></div>
+                    </div>
+
+                    <!-- Priority & Momentum Breakdown -->
+                    <div class="analytics-card">
+                        <div class="chart-header">
+                            <h3>⚡ Deal Priority &amp; Sourcing Velocity</h3>
+                            <span class="chart-subtitle">HOT vs WARM vs COLD breakdown with win probabilities</span>
+                        </div>
+                        <div id="priority-chart-container" class="progress-list"></div>
+                        <div id="score-chart-container" class="progress-list" style="margin-top: 18px;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 6: API & ENTERPRISE DOCUMENTATION -->
+        <!-- ========================================== -->
+        <section id="api-tab" class="tab-content">
+            <div class="card glass-card">
+                <div class="card-header flex-between">
+                    <div>
+                        <div class="badge-tag">DEVELOPER &amp; INTEGRATION PORTAL</div>
+                        <h2>Enterprise API Reference &amp; Integration Hub</h2>
+                        <p class="subtitle">Complete REST API documentation for programmatic deal sourcing, automated CRM sync (HubSpot, Salesforce), Zapier webhooks &amp; Python data pipelines</p>
+                    </div>
+                    <a href="/swagger-ui.html" target="_blank" class="btn btn-outline">Open Interactive Swagger UI ↗</a>
+                </div>
+
+                <!-- API Key Banner -->
+                <div class="api-key-banner">
+                    <div>
+                        <strong>Your Active Enterprise API Key:</strong>
+                        <p class="text-muted" style="font-size:12px; margin-top:2px;">Pass this key in the <code>X-API-KEY</code> header or use <code>Authorization: Bearer &lt;token&gt;</code> for seamless machine-to-machine integration.</p>
+                    </div>
+                    <div class="api-key-box" style="margin: 0;">
+                        <code id="api-key-display">Sign in to view your personal API key</code>
+                        <button id="btn-copy-key" class="btn btn-ghost btn-xs">Copy Key</button>
+                    </div>
+                </div>
+
+                <!-- API Endpoints Catalog -->
+                <div class="api-endpoints-list" id="api-endpoints-docs">
+                    <!-- Endpoint: Auth Login -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge post">POST</span>
+                            <code class="endpoint-uri">/api/auth/login</code>
+                            <span class="endpoint-desc">Authenticate User &amp; Issue JWT Bearer Token</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Enforces role-based operator security. Grants authenticated session and JWT bearer token for Managing Principals and Deal Associates.</p>
+                            <div class="grid-2-col" style="margin-top: 12px;">
+                                <div>
+                                    <label class="code-label">Request Payload:</label>
+                                    <pre class="code-block"><code>{
+  "username": "admin",
+  "password": "<your-password>"
+}</code></pre>
+                                </div>
+                                <div>
+                                    <label class="code-label">Response (200 OK):</label>
+                                    <pre class="code-block"><code>{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "username": "admin",
+  "role": "ROLE_ADMIN",
+  "apiKey": "caprae_live_api_..."
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint: Search Leads -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge get">GET</span>
+                            <code class="endpoint-uri">/api/leads</code>
+                            <span class="endpoint-desc">Search, Filter &amp; Retrieve Deal Pipeline</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Core retrieval endpoint supporting full-text query, industry filter, deal stage filter, and minimum score thresholds.</p>
+                            <div class="grid-2-col" style="margin-top: 12px;">
+                                <div>
+                                    <label class="code-label">Query Parameters:</label>
+                                    <pre class="code-block"><code>?query=DevOps&amp;status=QUALIFIED&amp;minScore=80</code></pre>
+                                </div>
+                                <div>
+                                    <label class="code-label">Sample Response (200 OK):</label>
+                                    <pre class="code-block"><code>[
+  {
+    "id": 1,
+    "companyName": "CloudPulse",
+    "domain": "cloudpulse.io",
+    "estimatedRevenue": 4800000,
+    "status": "QUALIFIED",
+    "dealScore": 92
+  }
+]</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint: Update Lead -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge put">PUT</span>
+                            <code class="endpoint-uri">/api/leads/{id}</code>
+                            <span class="endpoint-desc">Update Existing Deal Details &amp; Financials</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Allows searchers and analysts to update ARR, EBITDA, technology stack, priority, and location after diligence calls.</p>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint: Delete Lead -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge delete">DELETE</span>
+                            <code class="endpoint-uri">/api/leads/{id}</code>
+                            <span class="endpoint-desc">Delete or Archive Deal from Pipeline</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Removes disqualified deals or archived targets with full referential integrity.</p>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint: Update Status -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge patch">PATCH</span>
+                            <code class="endpoint-uri">/api/leads/{id}/status</code>
+                            <span class="endpoint-desc">Update Stage in the ETA / M&amp;A Funnel</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Drives the Kanban board and drag-and-drop state transitions between SOURCED, QUALIFIED, DILIGENCE, LOI_SUBMITTED, and CLOSED.</p>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint: Extract Scraper -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge post">POST</span>
+                            <code class="endpoint-uri">/api/scraper/extract</code>
+                            <span class="endpoint-desc">Real-Time Web Scraping, Tech Stack Detection &amp; Enrichment</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Invokes live DOM extraction to identify detected technologies (AWS, Stripe, React, Plaid), scrape founder emails, and synthesize ARR/EBITDA models.</p>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint: AI Outreach -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge post">POST</span>
+                            <code class="endpoint-uri">/api/ai/outreach</code>
+                            <span class="endpoint-desc">Generate High-Converting Cold Email Sequence</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Uses executive tone psychology to draft personalized 3-touch acquisition sequences for search fund operators.</p>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint: RAG Search -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge post">POST</span>
+                            <code class="endpoint-uri">/api/ai/rag-search</code>
+                            <span class="endpoint-desc">RAG Natural Language Database Search &amp; Deal Briefing</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Allows searchers and partners to query the internal pipeline using conversational questions, receiving structured deal citations and executive briefing.</p>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint: Financial Report -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge get">GET</span>
+                            <code class="endpoint-uri">/api/ai/financial-report/{leadId}</code>
+                            <span class="endpoint-desc">A-to-Z Financial Modeling &amp; Deal Financing Structures</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Generates institutional investment committee financial models, comparing SBA 7(a) bank debt vs founder rollover equity structures with 5-year exit ROI.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- PREMIER INSTITUTIONAL FINANCIAL FOOTER -->
+    <!-- ========================================== -->
+    <footer class="institutional-footer">
+        <div class="footer-top-accent"></div>
+        <div class="footer-container">
+            <div class="footer-grid">
+                <!-- Col 1: Firm Overview & ETA Thesis -->
+                <div class="footer-col brand-col">
+                    <div class="footer-brand">
+                        <div class="logo-badge sm">
+                            <span class="logo-icon">▲</span>
+                        </div>
+                        <span class="footer-brand-title">CAPRAE CAPITAL PARTNERS</span>
+                    </div>
+                    <p class="footer-firm-desc">
+                        Caprae Capital is an institutional Private Equity &amp; Search Fund investment firm specializing in Entrepreneurship Through Acquisition (ETA). We deploy patient 7-year strategic growth capital to scale high-margin, mission-critical B2B software and tech-enabled businesses.
+                    </p>
+                    <div class="footer-stat-badges">
+                        <div class="footer-mini-badge">
+                            <span class="badge-num">$150M+</span>
+                            <span class="badge-lbl">ETA Target AUM</span>
+                        </div>
+                        <div class="footer-mini-badge">
+                            <span class="badge-num">7 Years</span>
+                            <span class="badge-lbl">Investment Horizon</span>
+                        </div>
+                        <div class="footer-mini-badge">
+                            <span class="badge-num">94%</span>
+                            <span class="badge-lbl">Founder Retention</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Col 2: Deal Sourcing Criteria -->
+                <div class="footer-col">
+                    <h4 class="footer-heading">M&amp;A SOURCING CRITERIA</h4>
+                    <ul class="footer-links">
+                        <li><a href="#pipeline-tab" class="footer-nav-link" data-tab="pipeline-tab">B2B SaaS ($2M – $10M ARR)</a></li>
+                        <li><a href="#pipeline-tab" class="footer-nav-link" data-tab="pipeline-tab">DevOps &amp; Cloud Infrastructure</a></li>
+                        <li><a href="#pipeline-tab" class="footer-nav-link" data-tab="pipeline-tab">FinTech &amp; Treasury Platforms</a></li>
+                        <li><a href="#pipeline-tab" class="footer-nav-link" data-tab="pipeline-tab">Healthcare IT &amp; Medical Billing</a></li>
+                        <li><a href="#pipeline-tab" class="footer-nav-link" data-tab="pipeline-tab">Adjusted EBITDA Margins &gt; 20%</a></li>
+                        <li><a href="#pipeline-tab" class="footer-nav-link" data-tab="pipeline-tab">Founder Succession &amp; Rollover Equity</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Global Deal Desks -->
+                <div class="footer-col">
+                    <h4 class="footer-heading">GLOBAL DEAL DESKS</h4>
+                    <div class="office-location">
+                        <strong>New York City (HQ)</strong>
+                        <p>375 Park Avenue, 28th Floor<br>New York, NY 10152<br><span style="color:var(--accent-gold);">nyc-dealflow@capraecapital.com</span></p>
+                    </div>
+                    <div class="office-location" style="margin-top: 10px;">
+                        <strong>San Francisco (Tech Sourcing Hub)</strong>
+                        <p>One Maritime Plaza, Suite 1400<br>San Francisco, CA 94111<br><span style="color:var(--accent-cyan);">sf-operators@capraecapital.com</span></p>
+                    </div>
+                    <div class="office-location" style="margin-top: 10px;">
+                        <strong>London (European Desk)</strong>
+                        <p>Berkeley Square House, Mayfair<br>London W1J 6BD, United Kingdom</p>
+                    </div>
+                </div>
+
+                <!-- Col 4: Governance & Security -->
+                <div class="footer-col">
+                    <h4 class="footer-heading">GOVERNANCE &amp; SECURITY</h4>
+                    <div class="security-cert-box">
+                        <div class="cert-item">
+                            <span class="cert-icon">🔒</span>
+                            <div>
+                                <strong>Enterprise JWT v2.0</strong>
+                                <p>Stateless RS256/HMAC SHA-256 tokens with role-based access control.</p>
+                            </div>
+                        </div>
+                        <div class="cert-item">
+                            <span class="cert-icon">🛡️</span>
+                            <div>
+                                <strong>FINRA / SIPC Protocols</strong>
+                                <p>Private investment transactions compliant with SEC Rule 506(c).</p>
+                            </div>
+                        </div>
+                        <div class="cert-item">
+                            <span class="cert-icon">⚡</span>
+                            <div>
+                                <strong>SaaSquatch Real-Time Scraper</strong>
+                                <p>Automated rate-limiting, proxy rotation &amp; ethical scraping standards.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bottom Bar -->
+            <div class="footer-bottom">
+                <div class="footer-bottom-left">
+                    <div class="system-status-indicator">
+                        <span class="status-pulse-dot"></span>
+                        <span class="status-text">CAPRAE LIVE DEAL NETWORK: OPERATIONAL</span>
+                    </div>
+                    <span class="footer-divider">•</span>
+                    <span class="footer-disclaimer-text">Confidential &amp; Proprietary M&amp;A Intelligence Portal</span>
+                </div>
+                <div class="footer-bottom-right">
+                    <span>&copy; 2025 Caprae Capital Partners LLC. All rights reserved.</span>
+                    <span class="footer-divider">•</span>
+                    <a href="/swagger-ui.html" target="_blank" class="footer-legal-link">OpenAPI Docs</a>
+                    <span class="footer-divider">•</span>
+                    <a href="#" class="footer-legal-link" id="footer-terms-btn">Terms of Investment</a>
+                </div>
+            </div>
+
+            <div class="footer-legal-notice">
+                <p>IMPORTANT REGULATORY NOTICE: This portal contains confidential proprietary deal intelligence and investment analytics prepared exclusively for Caprae Capital Partners Managing Principals, Search Fund CEOs, and authorized Operating Partners. It does not constitute an offer to buy or sell securities. Target company estimates are synthesized through automated data engineering, public filings, and proprietary AI evaluation models.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- MANDATORY FIRST-TIME RESTRICTION LOGIN GATE -->
+    <!-- ========================================== -->
+    <div id="login-gate-modal" class="login-gate-overlay hidden">
+        <div class="login-gate-card">
+            <div class="login-header">
+                <div class="logo-badge lg">
+                    <span class="logo-icon">▲</span>
+                </div>
+                <h2>CAPRAE CAPITAL PARTNERS</h2>
+                <div class="login-badge-subtitle">SaaSquatch LeadGen Pro • Enterprise Authentication Gate</div>
+                <p class="login-desc">Confidential &amp; Proprietary Private Equity / ETA Intelligence Portal. Please authenticate with enterprise JWT credentials to access active deal flow.</p>
+            </div>
+
+            <form id="login-gate-form">
+                <div id="login-gate-error" class="login-error-msg hidden"></div>
+                <div class="input-group">
+                    <label for="login-username">Username or Operator Email</label>
+                    <input type="text" id="login-username" value="" placeholder="Username or email" required autocomplete="username">
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" value="" placeholder="Password" required autocomplete="current-password">
+                </div>
+                <button type="submit" id="btn-submit-login" class="btn btn-primary w-100 btn-lg">
+                    <span id="login-btn-text">Authenticate &amp; Unlock Portal</span>
+                </button>
+            </form>
+
+            <div class="login-security-notice">
+                <span>🔒 256-Bit SSL Secured</span> • <span>HMAC-SHA256 JWT Tokenized</span> • <span>Role-Based Access</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: Full Company Deal Details & Growth Thesis -->
+    <!-- ========================================== -->
+    <div id="deal-details-modal" class="modal-overlay hidden">
+        <div class="modal-box modal-xl">
+            <div class="modal-header">
+                <div class="flex-align-center gap-12">
+                    <span class="deal-id-tag" id="detail-deal-id">CP-1001</span>
+                    <h3 id="detail-company-title">Company Details</h3>
+                    <span class="badge" id="detail-status-badge">QUALIFIED</span>
+                    <span class="priority-badge" id="detail-priority-badge">HOT</span>
+                </div>
+                <button class="btn-close modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body-scrollable">
+                <!-- Top Metrics Strip -->
+                <div class="kpi-grid modal-kpi-grid">
+                    <div class="kpi-card sm">
+                        <div class="kpi-label">ESTIMATED ARR</div>
+                        <div class="kpi-value sm" id="detail-arr">$0</div>
+                        <div class="kpi-sub" id="detail-business-model">B2B SaaS</div>
+                    </div>
+                    <div class="kpi-card sm highlight-card">
+                        <div class="kpi-label">ADJUSTED EBITDA</div>
+                        <div class="kpi-value sm" id="detail-ebitda">$0</div>
+                        <div class="kpi-sub" id="detail-ebitda-margin">30% margin</div>
+                    </div>
+                    <div class="kpi-card sm">
+                        <div class="kpi-label">WIN PROBABILITY</div>
+                        <div class="kpi-value sm" id="detail-win-prob">85%</div>
+                        <div class="kpi-sub" id="detail-region">North America</div>
+                    </div>
+                    <div class="kpi-card sm">
+                        <div class="kpi-label">CAPRAE AI SCORE</div>
+                        <div class="kpi-value sm" id="detail-ai-score">92 / 100</div>
+                        <div class="kpi-sub" id="detail-fit-badge">PRIME TARGET</div>
+                    </div>
+                </div>
+
+                <!-- Deal Info Grid -->
+                <div class="grid-2-col" style="margin-top: 16px;">
+                    <!-- Left: Company Overview & Tech Stack -->
+                    <div class="card" style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: var(--radius-md);">
+                        <h4 style="color: var(--accent-gold); margin-bottom: 8px;">Company Profile &amp; Location</h4>
+                        <div class="detail-row"><strong>Domain:</strong> <a id="detail-domain-link" href="#" target="_blank" style="color: var(--accent-blue);"></a></div>
+                        <div class="detail-row"><strong>Location:</strong> <span id="detail-location-text">--</span></div>
+                        <div class="detail-row"><strong>Employees:</strong> <span id="detail-employees-text">--</span></div>
+                        <div class="detail-row"><strong>Industry:</strong> <span id="detail-industry-text">--</span></div>
+                        <div class="detail-row" style="margin-top: 8px;">
+                            <strong>Detected Tech Stack:</strong>
+                            <div id="detail-tech-chips" class="tech-chips-wrapper" style="margin-top: 4px;"></div>
+                        </div>
+                        <div class="detail-row" style="margin-top: 10px;">
+                            <strong>Business Description:</strong>
+                            <p id="detail-description-text" style="font-size: 13px; line-height: 1.5; color: var(--text-secondary); margin-top: 4px;"></p>
+                        </div>
+                    </div>
+
+                    <!-- Right: Founder & Contact Details -->
+                    <div class="card" style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: var(--radius-md);">
+                        <h4 style="color: var(--accent-cyan); margin-bottom: 8px;">Key Executive &amp; Contact Channel</h4>
+                        <div class="owner-profile-card" style="margin-bottom: 12px; background: rgba(255,255,255,0.03);">
+                            <div class="owner-avatar">👤</div>
+                            <div>
+                                <h4 id="detail-contact-name">Founder &amp; CEO</h4>
+                                <div class="text-muted" style="font-size: 12px;" id="detail-contact-title">Executive</div>
+                            </div>
+                        </div>
+                        <div class="detail-row"><strong>Primary Email:</strong> <a id="detail-contact-email" href="#" style="color: var(--accent-cyan);">--</a></div>
+                        <div class="detail-row"><strong>Phone:</strong> <span id="detail-contact-phone">--</span></div>
+                        <div class="detail-row"><strong>LinkedIn:</strong> <a id="detail-contact-linkedin" href="#" target="_blank" style="color: var(--accent-blue);">Company LinkedIn ↗</a></div>
+
+                        <div style="margin-top: 16px;">
+                            <h4 style="color: var(--accent-green); margin-bottom: 6px;">Caprae 7-Year ETA Growth Thesis</h4>
+                            <div id="detail-growth-thesis" class="thesis-box-sm">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes & Quote Section -->
+                <div class="grid-2-col" style="margin-top: 16px;">
+                    <div class="card" style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: var(--radius-md);">
+                        <h4 style="color: var(--text-primary); margin-bottom: 8px;">Meeting Notes &amp; Conversation Sentiment</h4>
+                        <div id="detail-notes-text" style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">No conversation recorded yet.</div>
+                    </div>
+                    <div class="card" style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: var(--radius-md);">
+                        <h4 style="color: var(--accent-gold); margin-bottom: 8px;">Attached Acquisition Quote / LOI Terms</h4>
+                        <div id="detail-quote-text" style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">No active quote generated.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer flex-between">
+                <button type="button" class="btn btn-secondary modal-close-btn">Close</button>
+                <div class="btn-group">
+                    <button id="btn-detail-edit" class="btn btn-secondary">✏️ Edit Deal</button>
+                    <button id="btn-detail-outreach" class="btn btn-primary">✉️ Draft AI Outreach</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: Edit Deal Target -->
+    <!-- ========================================== -->
+    <div id="edit-deal-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Edit Deal Target (<span id="edit-deal-id-display"></span>)</h3>
+                <button class="btn-close modal-close-btn">&times;</button>
+            </div>
+            <form id="edit-deal-form">
+                <input type="hidden" id="edit-lead-id">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Company Name *</label>
+                        <input type="text" id="edit-company" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Domain *</label>
+                        <input type="text" id="edit-domain" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Industry</label>
+                        <input type="text" id="edit-industry">
+                    </div>
+                    <div class="input-group">
+                        <label>Location / City, State</label>
+                        <input type="text" id="edit-location">
+                    </div>
+                    <div class="input-group">
+                        <label>Region</label>
+                        <input type="text" id="edit-region">
+                    </div>
+                    <div class="input-group">
+                        <label>Estimated ARR ($)</label>
+                        <input type="number" id="edit-arr">
+                    </div>
+                    <div class="input-group">
+                        <label>Estimated EBITDA ($)</label>
+                        <input type="number" id="edit-ebitda">
+                    </div>
+                    <div class="input-group">
+                        <label>Deal Priority</label>
+                        <select id="edit-priority" class="filter-select w-100">
+                            <option value="HOT">🔥 HOT Deal</option>
+                            <option value="WARM">⚡ WARM Deal</option>
+                            <option value="COLD">❄️ COLD Deal</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Deal Stage</label>
+                        <select id="edit-status" class="filter-select w-100">
+                            <option value="SOURCED">Sourced</option>
+                            <option value="QUALIFIED">Qualified</option>
+                            <option value="DILIGENCE">In Diligence</option>
+                            <option value="LOI_SUBMITTED">LOI Submitted</option>
+                            <option value="CLOSED">Closed</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Primary Email</label>
+                        <input type="email" id="edit-email">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Tech Stack</label>
+                    <input type="text" id="edit-tech">
+                </div>
+                <div class="input-group">
+                    <label>Company Description</label>
+                    <textarea id="edit-desc" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 1: Connect with Business Owner -->
+    <div id="connect-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Connect with Business Owner</h3>
+                <button class="btn-close modal-close-btn">&times;</button>
+            </div>
+            <div id="connect-modal-body">
+                <div class="owner-profile-card">
+                    <div class="owner-avatar">👤</div>
+                    <div>
+                        <h4 id="connect-owner-name">Founder &amp; CEO</h4>
+                        <div class="company-title" id="connect-company-name">Company</div>
+                        <div class="text-muted" style="font-size: 12px;" id="connect-location">Location</div>
+                    </div>
+                </div>
+
+                <div class="contact-channels-grid">
+                    <a id="connect-email-link" href="#" class="channel-btn">
+                        <span>✉️</span>
+                        <div>
+                            <strong>Direct Email</strong>
+                            <div id="connect-email-text" class="channel-sub">owner@domain.com</div>
+                        </div>
+                    </a>
+                    <a id="connect-phone-link" href="#" class="channel-btn">
+                        <span>📞</span>
+                        <div>
+                            <strong>Phone / SMS</strong>
+                            <div id="connect-phone-text" class="channel-sub">+1 (555) 000-0000</div>
+                        </div>
+                    </a>
+                    <a id="connect-linkedin-link" href="#" target="_blank" class="channel-btn">
+                        <span>💼</span>
+                        <div>
+                            <strong>LinkedIn Profile</strong>
+                            <div class="channel-sub">View Executive Profile ↗</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div style="margin-top: 18px;">
+                    <button id="btn-quick-outreach-jump" class="btn btn-secondary w-100">
+                        <span>🤖</span> Generate AI Cold Sequence for this Founder
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: AI Conversation Summarizer -->
+    <div id="convo-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>AI Conversation Summarizer &amp; Deal Qualifier</h3>
+                <button class="btn-close modal-close-btn">&times;</button>
+            </div>
+            <form id="convo-summary-form">
+                <input type="hidden" id="convo-lead-id">
+                <div class="input-group">
+                    <label>Company Under Review</label>
+                    <input type="text" id="convo-company-display" readonly style="opacity: 0.8;">
+                </div>
+                <div class="input-group">
+                    <label>Paste Call Notes, Email Thread, or Meeting Transcription</label>
+                    <textarea id="convo-text-input" rows="6" required placeholder="Paste notes here: e.g. Met with the founder Marcus. He built the company over 8 years and wants to retire by Q4. Open to staying on as advisor. Revenue is steady at $3.8M with 80% margins..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span>🤖</span> Analyze &amp; Update Deal
+                    </button>
+                </div>
+            </form>
+            <div id="convo-analysis-result" class="eval-card hidden" style="margin-top: 16px;">
+                <div class="flex-between">
+                    <div>
+                        <span class="badge" id="convo-detected-priority">HOT DEAL</span>
+                        <span class="badge" id="convo-detected-sentiment" style="margin-left: 6px;">POSITIVE</span>
+                    </div>
+                    <div class="win-prob-text">Win Probability: <strong id="convo-detected-prob">85%</strong></div>
+                </div>
+                <p id="convo-summary-output" style="font-size: 13px; margin-top: 10px; line-height: 1.5;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Create Acquisition Quote / Offer -->
+    <div id="quote-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Create Solution &amp; Valuation Quote</h3>
+                <button class="btn-close modal-close-btn">&times;</button>
+            </div>
+            <form id="quote-form">
+                <input type="hidden" id="quote-lead-id">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Company</label>
+                        <input type="text" id="quote-company-display" readonly>
+                    </div>
+                    <div class="input-group">
+                        <label>Proposed Enterprise Valuation ($)</label>
+                        <input type="number" id="quote-val-input" placeholder="e.g. 6500000">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Financing Structure Template</label>
+                    <select id="quote-structure-select" class="filter-select w-100">
+                        <option value="SBA_SENIOR">75% Cash at Close + 15% Seller Note + 10% Rollover</option>
+                        <option value="GROWTH_RECAP">50% Bank Facility + 30% Caprae Fund + 20% Founder Rollover</option>
+                        <option value="ALL_CASH">100% Cash at Close</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span>💼</span> Generate &amp; Attach LOI Quote
+                    </button>
+                </div>
+            </form>
+            <div id="quote-result-card" class="eval-card hidden" style="margin-top: 16px;">
+                <h4 style="color: var(--accent-gold); margin-bottom: 6px;">Generated LOI Term Sheet</h4>
+                <div id="quote-details-output" style="font-size: 13px; line-height: 1.6;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Add New Deal Form -->
+    <div id="create-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Add New Sourced Target</h3>
+                <button class="btn-close modal-close-btn">&times;</button>
+            </div>
+            <form id="create-lead-form">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Company Name *</label>
+                        <input type="text" id="modal-company" required placeholder="e.g. Acme Tech">
+                    </div>
+                    <div class="input-group">
+                        <label>Domain *</label>
+                        <input type="text" id="modal-domain" required placeholder="e.g. acme.io">
+                    </div>
+                    <div class="input-group">
+                        <label>Industry</label>
+                        <input type="text" id="modal-industry" placeholder="e.g. B2B SaaS" value="B2B SaaS">
+                    </div>
+                    <div class="input-group">
+                        <label>Region / Location</label>
+                        <input type="text" id="modal-region" placeholder="e.g. North America - Texas" value="North America">
+                    </div>
+                    <div class="input-group">
+                        <label>Estimated ARR ($)</label>
+                        <input type="number" id="modal-arr" placeholder="e.g. 2500000" value="2500000">
+                    </div>
+                    <div class="input-group">
+                        <label>Tech Stack</label>
+                        <input type="text" id="modal-tech" placeholder="e.g. React, AWS, Stripe" value="React, AWS, Stripe, PostgreSQL">
+                    </div>
+                    <div class="input-group">
+                        <label>Deal Priority</label>
+                        <select id="modal-priority" class="filter-select w-100">
+                            <option value="HOT">🔥 HOT Deal</option>
+                            <option value="WARM" selected>⚡ WARM Deal</option>
+                            <option value="COLD">❄️ COLD Deal</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Primary Email</label>
+                        <input type="email" id="modal-email" placeholder="founder@acme.io">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Company Description</label>
+                    <textarea id="modal-desc" rows="3" placeholder="Brief summary of business model and market focus"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Target to Pipeline</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Interactive Floating Chart Tooltip -->
+    <div id="chart-tooltip" class="chart-tooltip hidden"></div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

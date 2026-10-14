@@ -1,0 +1,92 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = 'saasquatch-leadgen-pro'
+        AWS_REGION = 'us-east-1'
+        ECR_REPO = '123456789012.dkr.ecr.us-east-1.amazonaws.com/caprae/saasquatch-leadgen-pro'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+    }
+
+    tools {
+        maven 'Maven 3.9'
+        jdk 'JDK 17'
+    }
+
+    stages {
+        stage('1. Checkout Code') {
+            steps {
+                checkout scm
+                echo "Successfully checked out source from Git repository."
+            }
+        }
+
+        stage('2. Build & Static Analysis') {
+            steps {
+                echo "Executing Maven compile & static checks..."
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('3. Run JUnit 5 Tests') {
+            steps {
+                echo "Executing test suite with JUnit 5 & Mockito..."
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('4. SonarQube Quality Gate') {
+            steps {
+                // Not configured yet. To enable, add a SonarQube server in Jenkins and uncomment:
+                // withSonarQubeEnv('SonarQube') {
+                //     sh 'mvn sonar:sonar'
+                // }
+                // timeout(time: 5, unit: 'MINUTES') {
+                //     waitForQualityGate abortPipeline: true
+                // }
+                echo "SKIPPED: SonarQube quality gate is not configured. No quality or coverage result was produced."
+            }
+        }
+
+        stage('5. Package Application JAR') {
+            steps {
+                echo "Packaging Spring Boot executable JAR..."
+                sh 'mvn package -DskipTests'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+
+        stage('6. Docker Build & ECR Push') {
+            steps {
+                echo "Building production multi-stage Docker container..."
+                sh "docker build -t ${ECR_REPO}:${IMAGE_TAG} -t ${ECR_REPO}:latest ."
+                echo "NOTE: the ECR push below is commented out until AWS credentials and the real ECR repository are configured."
+                // sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}"
+                // sh "docker push ${ECR_REPO}:${IMAGE_TAG}"
+                // sh "docker push ${ECR_REPO}:latest"
+            }
+        }
+
+        stage('7. Deploy to AWS ECS (Blue/Green)') {
+            steps {
+                echo "NOTE: deployment is not enabled. The ECS command below is commented out until the cluster and credentials exist."
+                // sh "aws ecs update-service --cluster caprae-production --service saasquatch-leadgen-service --force-new-deployment"
+                echo "SKIPPED: no deployment was performed."
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline succeeded: build, tests and image build passed. No deployment was performed."
+        }
+        failure {
+            echo "Pipeline failed! Sending notification to Slack/email..."
+        }
+    }
+}
