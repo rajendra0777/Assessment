@@ -24,12 +24,12 @@
         </div>
 
         <nav class="nav-links">
-            <button class="nav-tab active" data-tab="pipeline-tab">Deal Pipeline</button>
-            <button class="nav-tab" data-tab="scraper-tab">Real-Time Sourcing</button>
-            <button class="nav-tab" data-tab="copilot-tab">AI Deal Copilot</button>
-            <button class="nav-tab" data-tab="outreach-tab">Outreach Studio</button>
-            <button class="nav-tab" data-tab="analytics-tab">Pipeline Analytics</button>
-            <button class="nav-tab" data-tab="api-tab">API &amp; Docs</button>
+            <button class="nav-tab active" data-tab="pipeline-tab" data-route="/deal-pipeline">Deal Pipeline</button>
+            <button class="nav-tab" data-tab="scraper-tab" data-route="/real-time-sourcing">Real-Time Sourcing</button>
+            <button class="nav-tab" data-tab="copilot-tab" data-route="/ai-deal-copilot">AI Deal Copilot</button>
+            <button class="nav-tab" data-tab="outreach-tab" data-route="/outreach-studio">Outreach Studio</button>
+            <button class="nav-tab" data-tab="analytics-tab" data-route="/pipeline-analytics">Pipeline Analytics</button>
+            <button class="nav-tab" data-tab="api-tab" data-route="/api-docs">API &amp; Docs</button>
         </nav>
 
         <div class="nav-actions">
@@ -47,34 +47,34 @@
     <!-- Main Container -->
     <main class="main-container">
 
-        <!-- KPI Summary Cards -->
-        <section class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-label">TOTAL SOURCED TARGETS</div>
-                <div class="kpi-value" id="kpi-total-leads">--</div>
-                <div class="kpi-sub"><span class="trend-up">▲ Active</span> proprietary pipeline</div>
-            </div>
-            <div class="kpi-card highlight-card">
-                <div class="kpi-label">PIPELINE DEAL VALUE (ARR)</div>
-                <div class="kpi-value" id="kpi-pipeline-rev">--</div>
-                <div class="kpi-sub"><span class="trend-gold">★ $5.2M</span> avg deal size</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label">AVG DEAL READINESS SCORE</div>
-                <div class="kpi-value" id="kpi-avg-score">--</div>
-                <div class="kpi-sub">Caprae ETA qualification index</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-label">ACTIVE IN PIPELINE</div>
-                <div class="kpi-value" id="kpi-qualified-leads">--</div>
-                <div class="kpi-sub" id="kpi-diligence-sub">Qualified &amp; In Diligence</div>
-            </div>
-        </section>
-
         <!-- ========================================== -->
         <!-- TAB 1: DEAL PIPELINE (KANBAN & TABLE VIEW) -->
         <!-- ========================================== -->
         <section id="pipeline-tab" class="tab-content active">
+            <!-- KPI Summary Cards -->
+            <section class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">TOTAL SOURCED TARGETS</div>
+                    <div class="kpi-value" id="kpi-total-leads">--</div>
+                    <div class="kpi-sub"><span class="trend-up">▲ Active</span> proprietary pipeline</div>
+                </div>
+                <div class="kpi-card highlight-card">
+                    <div class="kpi-label">PIPELINE DEAL VALUE (ARR)</div>
+                    <div class="kpi-value" id="kpi-pipeline-rev">--</div>
+                    <div class="kpi-sub"><span class="trend-gold">★ $5.2M</span> avg deal size</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">AVG DEAL READINESS SCORE</div>
+                    <div class="kpi-value" id="kpi-avg-score">--</div>
+                    <div class="kpi-sub">Caprae ETA qualification index</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">ACTIVE IN PIPELINE</div>
+                    <div class="kpi-value" id="kpi-qualified-leads">--</div>
+                    <div class="kpi-sub" id="kpi-diligence-sub">Qualified &amp; In Diligence</div>
+                </div>
+            </section>
+
             <div class="card glass-card">
                 <div class="card-header flex-between">
                     <div>
@@ -495,10 +495,16 @@
                     </div>
                     <div class="btn-group">
                         <button id="btn-copy-full-sequence" class="btn btn-secondary">
-                            <span>📋</span> Copy Full 3-Touch Sequence
+                            <span>📋</span> Copy Full Sequence
+                        </button>
+                        <button id="btn-save-all-drafts" class="btn btn-secondary">
+                            <span>💾</span> Save All as Drafts
+                        </button>
+                        <button id="btn-send-full-sequence" class="btn btn-primary">
+                            <span>🚀</span> Send Full Drip Sequence
                         </button>
                         <button id="btn-download-sequence" class="btn btn-secondary">
-                            <span>💾</span> Export Sequence (.txt)
+                            <span>💾</span> Export (.txt)
                         </button>
                     </div>
                 </div>
@@ -545,50 +551,93 @@
                         </button>
                     </div>
 
-                    <!-- Right: 3-Touch Sequence Preview -->
+                    <!-- Right: 3-Touch Sequence Preview with Send & Draft Options -->
                     <div class="outreach-sequence-display">
                         <!-- Touch 1: Day 1 -->
-                        <div class="sequence-step-card">
+                        <div class="sequence-step-card" id="card-touch-1">
                             <div class="step-header flex-between">
                                 <div class="step-title">
                                     <span class="step-num">Touch 1</span>
                                     <strong>Day 1 — Confidential Founder Inquiry</strong>
                                 </div>
-                                <button class="btn btn-ghost btn-xs btn-copy-step" data-target="email-body-text">Copy Day 1</button>
+                                <div class="flex-align-center gap-6">
+                                    <span class="email-status-badge status-ready" id="status-touch-1">Ready</span>
+                                    <button class="btn btn-ghost btn-xs btn-copy-step" data-target="email-body-text" title="Copy email text">📋 Copy</button>
+                                    <button class="btn btn-secondary btn-xs btn-save-draft-step" data-touch="1" title="Save this touch as draft">💾 Save Draft</button>
+                                    <button class="btn btn-primary btn-xs btn-send-step" data-touch="1" title="Send email via Caprae delivery gateway">✈️ Send Email</button>
+                                </div>
+                            </div>
+                            <div class="email-preview-field">
+                                <span class="email-field-tag">To:</span>
+                                <input type="email" class="email-subject-input email-recipient-field" id="email-recipient-1" placeholder="founder@targetdomain.com">
                             </div>
                             <div class="email-preview-field">
                                 <span class="email-field-tag">Subject:</span>
-                                <div class="subject-box" id="email-subject-line">Select a deal and click generate...</div>
+                                <input type="text" class="email-subject-input" id="email-subject-input-1" placeholder="Select a deal and click generate...">
                             </div>
-                            <textarea id="email-body-text" class="email-body-area" rows="7" readonly placeholder="Day 1 cold email body will appear here..."></textarea>
+                            <textarea id="email-body-text" class="email-body-area" rows="7" placeholder="Day 1 cold email body will appear here..."></textarea>
+                            <div class="step-footer flex-between" style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 11px;">
+                                <span class="text-muted" id="audit-touch-1">Status: Ready to send or save as draft</span>
+                                <a href="#" class="btn-mailto-link" id="mailto-touch-1" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">✉️ Open in Mail App</a>
+                            </div>
                         </div>
 
                         <!-- Touch 2: Day 3 -->
-                        <div class="sequence-step-card" style="margin-top: 14px;">
+                        <div class="sequence-step-card" id="card-touch-2" style="margin-top: 14px;">
                             <div class="step-header flex-between">
                                 <div class="step-title">
                                     <span class="step-num">Touch 2</span>
                                     <strong>Day 3 — Caprae 7-Year Growth Multiple &amp; Succession Angle</strong>
                                 </div>
-                                <button class="btn btn-ghost btn-xs btn-copy-step" data-target="email-day3-body">Copy Day 3</button>
+                                <div class="flex-align-center gap-6">
+                                    <span class="email-status-badge status-ready" id="status-touch-2">Ready</span>
+                                    <button class="btn btn-ghost btn-xs btn-copy-step" data-target="email-day3-body" title="Copy email text">📋 Copy</button>
+                                    <button class="btn btn-secondary btn-xs btn-save-draft-step" data-touch="2" title="Save this touch as draft">💾 Save Draft</button>
+                                    <button class="btn btn-primary btn-xs btn-send-step" data-touch="2" title="Send email via Caprae delivery gateway">✈️ Send Email</button>
+                                </div>
+                            </div>
+                            <div class="email-preview-field">
+                                <span class="email-field-tag">To:</span>
+                                <input type="email" class="email-subject-input email-recipient-field" id="email-recipient-2" placeholder="founder@targetdomain.com">
                             </div>
                             <div class="email-preview-field">
                                 <span class="email-field-tag">Subject:</span>
-                                <div class="subject-box" id="email-subject-line-2">Re: Succession &amp; 7-year strategic growth</div>
+                                <input type="text" class="email-subject-input" id="email-subject-input-2" placeholder="Re: Succession & 7-year strategic growth">
                             </div>
-                            <textarea id="email-day3-body" class="email-body-area" rows="6" readonly placeholder="Day 3 follow-up email snippet will appear here..."></textarea>
+                            <textarea id="email-day3-body" class="email-body-area" rows="6" placeholder="Day 3 follow-up email snippet will appear here..."></textarea>
+                            <div class="step-footer flex-between" style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 11px;">
+                                <span class="text-muted" id="audit-touch-2">Status: Ready to send or save as draft</span>
+                                <a href="#" class="btn-mailto-link" id="mailto-touch-2" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">✉️ Open in Mail App</a>
+                            </div>
                         </div>
 
                         <!-- Touch 3: Day 7 -->
-                        <div class="sequence-step-card" style="margin-top: 14px;">
+                        <div class="sequence-step-card" id="card-touch-3" style="margin-top: 14px;">
                             <div class="step-header flex-between">
                                 <div class="step-title">
                                     <span class="step-num">Touch 3</span>
                                     <strong>Day 7 — Friendly Permission-to-Close Follow-Up</strong>
                                 </div>
-                                <button class="btn btn-ghost btn-xs btn-copy-step" data-target="email-day7-body">Copy Day 7</button>
+                                <div class="flex-align-center gap-6">
+                                    <span class="email-status-badge status-ready" id="status-touch-3">Ready</span>
+                                    <button class="btn btn-ghost btn-xs btn-copy-step" data-target="email-day7-body" title="Copy email text">📋 Copy</button>
+                                    <button class="btn btn-secondary btn-xs btn-save-draft-step" data-touch="3" title="Save this touch as draft">💾 Save Draft</button>
+                                    <button class="btn btn-primary btn-xs btn-send-step" data-touch="3" title="Send email via Caprae delivery gateway">✈️ Send Email</button>
+                                </div>
                             </div>
-                            <textarea id="email-day7-body" class="email-body-area" rows="5" readonly placeholder="Day 7 direct break-up / founder line will appear here..."></textarea>
+                            <div class="email-preview-field">
+                                <span class="email-field-tag">To:</span>
+                                <input type="email" class="email-subject-input email-recipient-field" id="email-recipient-3" placeholder="founder@targetdomain.com">
+                            </div>
+                            <div class="email-preview-field">
+                                <span class="email-field-tag">Subject:</span>
+                                <input type="text" class="email-subject-input" id="email-subject-input-3" placeholder="Re: Quick follow-up regarding your company">
+                            </div>
+                            <textarea id="email-day7-body" class="email-body-area" rows="5" placeholder="Day 7 direct break-up / founder line will appear here..."></textarea>
+                            <div class="step-footer flex-between" style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 11px;">
+                                <span class="text-muted" id="audit-touch-3">Status: Ready to send or save as draft</span>
+                                <a href="#" class="btn-mailto-link" id="mailto-touch-3" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">✉️ Open in Mail App</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -842,6 +891,63 @@
                             <p><strong>Business Significance:</strong> Generates institutional investment committee financial models, comparing SBA 7(a) bank debt vs founder rollover equity structures with 5-year exit ROI.</p>
                         </div>
                     </div>
+
+                    <!-- Endpoint: Create Custom Lead -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge post">POST</span>
+                            <code class="endpoint-uri">/api/leads</code>
+                            <span class="endpoint-desc">Create &amp; Auto-Score New Acquisition Target</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Inserts candidate deal, calculates initial AI deal readiness score, and triggers growth thesis synthesis.</p>
+                            <div class="grid-2-col" style="margin-top: 12px;">
+                                <div>
+                                    <label class="code-label">Request Payload:</label>
+                                    <pre class="code-block"><code>{
+  "companyName": "Acme SaaS",
+  "domain": "acmesaas.io",
+  "industry": "B2B SaaS",
+  "estimatedRevenue": 3200000,
+  "priority": "HOT"
+}</code></pre>
+                                </div>
+                                <div>
+                                    <label class="code-label">Response (200 OK):</label>
+                                    <pre class="code-block"><code>{
+  "id": 18,
+  "companyName": "Acme SaaS",
+  "status": "SOURCED",
+  "dealScore": 86
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint: Portfolio Metrics -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge get">GET</span>
+                            <code class="endpoint-uri">/api/metrics/dashboard</code>
+                            <span class="endpoint-desc">Real-Time Portfolio KPIs &amp; Conversion Telemetry</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Supplies executive telemetry: total sourced leads, aggregate ARR, average deal score, and breakdown by stage (including LOI Submitted).</p>
+                        </div>
+                    </div>
+
+                    <!-- Endpoint: Export Deals -->
+                    <div class="api-endpoint-card">
+                        <div class="endpoint-header">
+                            <span class="http-badge get">GET</span>
+                            <code class="endpoint-uri">/api/leads/export/{format}</code>
+                            <span class="endpoint-desc">Programmatic Pipeline Export (CSV or JSON)</span>
+                        </div>
+                        <div class="endpoint-body">
+                            <p><strong>Business Significance:</strong> Allows automated ETL ingestion for BI tooling (Power BI, Snowflake, Tableau) via format parameters <code>csv</code> or <code>json</code>.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -954,6 +1060,8 @@
                 <div class="footer-bottom-right">
                     <span>&copy; 2025 Caprae Capital Partners LLC. All rights reserved.</span>
                     <span class="footer-divider">•</span>
+                    <a href="#api-tab" class="footer-nav-link footer-legal-link" data-tab="api-tab">API &amp; Docs Hub</a>
+                    <span class="footer-divider">•</span>
                     <a href="/swagger-ui.html" target="_blank" class="footer-legal-link">OpenAPI Docs</a>
                     <span class="footer-divider">•</span>
                     <a href="#" class="footer-legal-link" id="footer-terms-btn">Terms of Investment</a>
@@ -983,12 +1091,12 @@
             <form id="login-gate-form">
                 <div id="login-gate-error" class="login-error-msg hidden"></div>
                 <div class="input-group">
-                    <label for="login-username">Username or Operator Email</label>
-                    <input type="text" id="login-username" value="" placeholder="Username or email" required autocomplete="username">
+                    <label for="login-username">Enterprise Username</label>
+                    <input type="text" id="login-username" value="" placeholder="Enter username (e.g. admin)" required autocomplete="username">
                 </div>
                 <div class="input-group">
                     <label for="login-password">Password</label>
-                    <input type="password" id="login-password" value="" placeholder="Password" required autocomplete="current-password">
+                    <input type="password" id="login-password" value="" placeholder="Enter password" required autocomplete="current-password">
                 </div>
                 <button type="submit" id="btn-submit-login" class="btn btn-primary w-100 btn-lg">
                     <span id="login-btn-text">Authenticate &amp; Unlock Portal</span>

@@ -59,8 +59,17 @@ public class SecurityConfig {
             .headers(h -> h.frameOptions(f -> f.sameOrigin()))
             .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             .authorizeHttpRequests(auth -> auth
-                // Static single-page UI (it shows its own login screen)
-                .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                // Static single-page UI and dynamic tab routes (it shows its own login screen)
+                .requestMatchers(
+                    "/", "/index.html", "/css/**", "/js/**", "/images/**", "/favicon.ico",
+                    "/login",
+                    "/deal-pipeline", "/deal-pipeline/**",
+                    "/real-time-sourcing", "/real-time-sourcing/**",
+                    "/ai-deal-copilot", "/ai-deal-copilot/**",
+                    "/outreach-studio", "/outreach-studio/**",
+                    "/pipeline-analytics", "/pipeline-analytics/**",
+                    "/api-docs", "/api-and-docs"
+                ).permitAll()
                 // Login is public; creating accounts is admin-only
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/register").hasRole("ADMIN")

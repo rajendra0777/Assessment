@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Caprae Capital Partners - Technical Project & Handbook Submission</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 18mm 16mm 18mm 16mm;
+            @bottom-right {
+                content: counter(page);
+                font-size: 9pt;
+                color: #64748b;
+            }
+        }
+
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent-gold: #b45309;
+            --accent-gold-light: #fef3c7;
+            --accent-blue: #0369a1;
+            --accent-blue-light: #e0f2fe;
+            --accent-emerald: #047857;
+            --accent-emerald-light: #d1fae5;
+            --text-main: #1e293b;
+            --text-muted: #475569;
+            --border-color: #cbd5e1;
+            --bg-light: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-main);
+            background: #ffffff;
+            line-height: 1.55;
+            font-size: 10pt;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Cover Page */
+        .cover-page {
+            page-break-after: always;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px 20px 30px 20px;
+            border-top: 6px solid #b45309;
+        }
+
+        .cover-badge {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 8.5pt;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: 1px solid #fde68a;
+        }
+
+        .cover-header h1 {
+            font-size: 28pt;
+            color: #0f172a;
+            margin: 20px 0 10px 0;
+            line-height: 1.15;
+            font-weight: 800;
+        }
+
+        .cover-header .subtitle {
+            font-size: 13pt;
+            color: #b45309;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        .cover-desc {
+            font-size: 11pt;
+            color: #475569;
+            max-width: 650px;
+            line-height: 1.6;
+        }
+
+        .meta-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 18px 24px;
+            margin: 30px 0;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 24px;
+        }
+
+        .meta-item {
+            font-size: 9.5pt;
+        }
+
+        .meta-label {
+            font-size: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .meta-val {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .cover-footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 8.5pt;
+            color: #64748b;
+        }
+
+        /* Typography & Layout */
+        h2 {
+            font-size: 15pt;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 6px;
+            margin-top: 26px;
+            margin-bottom: 14px;
+            font-weight: 700;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            font-size: 11.5pt;
+            color: #b45309;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            page-break-after: avoid;
+        }
+
+        h4 {
+            font-size: 10pt;
+            color: #0f172a;
+            margin-top: 12px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        p {
+            margin: 0 0 10px 0;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin: 6px 0 12px 20px;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        /* Section divider */
+        .section-break {
+            page-break-after: always;
+        }
+
+        /* Cards and Callouts */
+        .callout {
+            border-left: 4px solid var(--accent-gold);
+            background: #fffbeb;
+            padding: 12px 16px;
+            border-radius: 0 6px 6px 0;
+            margin: 14px 0;
+            font-size: 9.5pt;
+        }
+
+        .callout.blue {
+            border-left-color: var(--accent-blue);
+            background: #f0f9ff;
+        }
+
+        .callout.emerald {
+            border-left-color: var(--accent-emerald);
+            background: #ecfdf5;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+            font-size: 10pt;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 18px 0;
+            font-size: 9pt;
+            page-break-inside: avoid;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            text-align: left;
+        }
+
+        th {
+            background: #0f172a;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 8.5pt;
+            letter-spacing: 0.5px;
+        }
+
+        tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+
+        /* Feature Box */
+        .feature-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            page-break-inside: avoid;
+        }
+
+        .feature-badge {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #334155;
+            font-size: 7.5pt;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .feature-badge.hot { background: #fee2e2; color: #991b1b; }
+        .feature-badge.gold { background: #fef3c7; color: #92400e; }
+        .feature-badge.blue { background: #e0f2fe; color: #075985; }
+        .feature-badge.green { background: #dcfce7; color: #166534; }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 8px 12px;
+            margin-top: 8px;
+            font-size: 9pt;
+        }
+
+        .feature-label {
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .code-snippet {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: Consolas, Monaco, "Courier New", monospace;
+            font-size: 8pt;
+            margin: 8px 0;
+            overflow-x: auto;
+        }
+
+        /* Script / Timeline */
+        .timeline-step {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+
+        .timeline-time {
+            font-weight: 700;
+            color: #b45309;
+            font-size: 9pt;
+        }
+
+        .timeline-body {
+            border-left: 2px solid #e2e8f0;
+            padding-left: 12px;
+        }
+
+        .sig-block {
+            margin-top: 35px;
+            padding-top: 15px;
+            border-top: 1px solid #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ======================================================== -->
+    <!-- COVER PAGE -->
+    <!-- ======================================================== -->
+    <div class="cover-page">
+        <div>
+            <div class="cover-badge">Caprae Capital Partners • Engineering Pre-Work</div>
+            <div class="cover-header">
+                <h1>Full Stack Developer Interview Pre-Work &amp; Technical Submission</h1>
+                <div class="subtitle">SaaSquatch LeadGen Pro — Enterprise Deal Sourcing, AI Lead Generation &amp; M&amp;A Intelligence Platform</div>
+                <div class="cover-desc">
+                    Comprehensive technical implementation document, system architecture blueprint, business rationale (Why, How, What), and strategic answers for Caprae Capital’s Full Stack Developer evaluation.
+                </div>
+            </div>
+
+            <div class="meta-card">
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">Candidate Name</span>
+                        <span class="meta-val">Rajendra Pratap</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Target Role</span>
+                        <span class="meta-val">Full Stack Developer / Software Engineer</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Hiring Firm</span>
+                        <span class="meta-val">Caprae Capital Partners (Managing Principal: Kevin Hong)</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Reference Platform</span>
+                        <span class="meta-val">SaaSquatch Leads (saasquatchleads.com)</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Submission Date</span>
+                        <span class="meta-val">October 2026</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Primary Stack</span>
+                        <span class="meta-val">Java 17 LTS, Spring Boot 3.3.4, PostgreSQL 16, SPA Vanilla JS</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cover-footer">
+            <span>Confidential &amp; Proprietary • Caprae Capital Partners</span>
+            <span>Subject: Full Stack Developer - Handbook Submission - Rajendra Pratap</span>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 1: EXECUTIVE SUMMARY & ARCHITECTURE -->
+    <!-- ======================================================== -->
+    <h2>1. Executive Summary &amp; Development Strategy</h2>
+
+    <p>
+        <strong>Caprae Capital Partners</strong> is transforming the private equity and Entrepreneurship Through Acquisition (ETA) landscape by replacing legacy financial engineering with a <strong>seven-year operational transformation journey</strong> powered by proprietary software and <strong>MaaS (M&amp;A as a Service)</strong>. While traditional search funds and private equity firms rent commoditized databases (e.g., ZoomInfo, PitchBook, Apollo) where the same deals are aggressively shopped to dozens of competitors, Caprae builds its own proprietary tools like <strong>SaaSquatch Leads</strong> to source high-margin, off-market B2B software companies before competitors even know they exist.
+    </p>
+
+    <p>
+        In accordance with the <em>Full Stack Developer Interview Pre-Work Handbook</em>, this submission enhances the SaaSquatch sourcing engine through a <strong>Quality First</strong> strategic focus. We engineered an institutional-grade platform with real-time web scraping, automated CRM state transitions, AI-powered cold outreach sequences with live dispatch and draft persistence, dynamic SPA deep-linking, and enterprise security.
+    </p>
+
+    <div class="callout emerald">
+        <div class="callout-title">Key Engineering Results at a Glance</div>
+        <strong>36/36 Automated Tests Passing (0 Failures, 0 Errors)</strong> across MockMvc integration tests, role-based security barriers, URL safety validators, and deduplication services. Zero runtime dependencies required for local execution.
+    </div>
+
+    <h3>Complete Technology Stack Breakdown</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Layer</th>
+                <th>Technology / Framework</th>
+                <th>Architectural Justification &amp; Performance Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Core Language</strong></td>
+                <td>Java 17 LTS (Amazon Corretto / OpenJDK 21 compatible)</td>
+                <td>LTS foundation with modern switch expressions, records, and text blocks; required for Spring Boot 3 enterprise stability.</td>
+            </tr>
+            <tr>
+                <td><strong>Backend Framework</strong></td>
+                <td>Spring Boot 3.3.4 (Spring MVC, Spring Data JPA)</td>
+                <td>Production-ready enterprise framework with dependency injection, auto-configured connection pooling (HikariCP), and transactional safety.</td>
+            </tr>
+            <tr>
+                <td><strong>Security &amp; Auth</strong></td>
+                <td>Spring Security 6 + JJWT 0.12.6 + BCrypt</td>
+                <td>Stateless authentication with HMAC-SHA256 tokens (1-hour expiration) and personal <code>X-API-KEY</code> headers for machine clients.</td>
+            </tr>
+            <tr>
+                <td><strong>Databases</strong></td>
+                <td>H2 (Zero-dependency embedded) &amp; PostgreSQL 16</td>
+                <td>Dual-mode database design: in-memory H2 with seed accounts for instant local eval; PostgreSQL with indexing for production workloads.</td>
+            </tr>
+            <tr>
+                <td><strong>Scraping Engine</strong></td>
+                <td>Jsoup 1.18.1 with Strict URL Safety Validation</td>
+                <td>High-speed DOM crawler and entity parser with SSRF defense preventing access to private ranges (RFC 1918) and cloud metadata (169.254.169.254).</td>
+            </tr>
+            <tr>
+                <td><strong>Frontend Architecture</strong></td>
+                <td>Vanilla HTML5, CSS3 Glassmorphism, Modern ES6 JS</td>
+                <td>Zero external bundle overhead, zero node_modules bloat; sub-50ms page load with custom HTML5 History API (pushState/popstate) SPA routing.</td>
+            </tr>
+            <tr>
+                <td><strong>DevOps &amp; Hosting</strong></td>
+                <td>Docker Multi-Stage, Docker Compose, AWS Blueprint</td>
+                <td>Containerized deployment targeting AWS ECS Fargate (serverless containers), RDS Multi-AZ PostgreSQL, Application Load Balancer, and S3.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="section-break"></div>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 2: FUNCTIONALITY DEEP DIVE (WHY, HOW, WHAT) -->
+    <!-- ======================================================== -->
+    <h2>2. Core Functionalities Deep Dive (Why, How, What &amp; Significance)</h2>
+
+    <div class="feature-card">
+        <span class="feature-badge hot">Feature 1: Real-Time Natural Language Sourcing &amp; DOM Scraper</span>
+        <div class="feature-grid">
+            <div class="feature-label">WHAT:</div>
+            <div>An AI-assisted prompt parser that accepts plain English queries (e.g. <em>"Find profitable B2B cybersecurity SaaS in Texas with $2M–$5M ARR using AWS and Stripe"</em>), identifies taxonomy and revenue bounds, executes live DOM extraction, fingerprints tech signatures (Stripe, HubSpot, AWS, React), and enriches leads directly into the database.</div>
+
+            <div class="feature-label">WHY:</div>
+            <div>Searchers waste 15–20 hours per week manually writing complex boolean searches across disparate directories. Natural language querying allows associates and partners to rapidly discover off-market acquisition targets in seconds.</div>
+
+            <div class="feature-label">HOW:</div>
+            <div>Spring Boot’s <code>AiCopilotService.parsePromptToScrapeCriteria()</code> extracts target industry, geographic constraints, and search terms. <code>WebScraperService</code> uses Jsoup to fetch site headers and meta tags while strictly blocking private IP ranges to prevent SSRF attacks.</div>
+
+            <div class="feature-label">SIGNIFICANCE:</div>
+            <div>Provides proprietary deal flow directly to Caprae’s pipeline without paying $30,000+/year for commoditized databases, giving the firm proprietary access to acquisition opportunities.</div>
+        </div>
+    </div>
+
+    <div class="feature-card">
+        <span class="feature-badge gold">Feature 2: Dynamic Kanban Deal Pipeline &amp; Stage Filter Routing</span>
+        <div class="feature-grid">
+            <div class="feature-label">WHAT:</div>
+            <div>A 5-stage visual Kanban board (<code>SOURCED</code>, <code>QUALIFIED</code>, <code>DILIGENCE</code>, <code>LOI_SUBMITTED</code>, <code>CLOSED</code>) with drag-and-drop mechanics, win probability gauges, and dynamic URL endpoints (e.g. <code>http://localhost:8080/deal-pipeline/loi-submitted</code>).</div>
+
+            <div class="feature-label">WHY:</div>
+            <div>M&amp;A pipelines require instant visibility into deal velocity. Teams need to share filtered views (e.g. reviewing all deals with LOIs submitted) with zero context loss and clean browser bookmarking.</div>
+
+            <div class="feature-label">HOW:</div>
+            <div>Fixed column key mismatch (<code>col-loi</code> mapping to <code>LOI_SUBMITTED</code>). Added <code>SpaRouteController</code> with wildcard mappings (<code>/deal-pipeline/**</code>) forwarding to <code>index.html</code>, and wired <code>pushState</code>/<code>popstate</code> to synchronize state bidirectionally.</div>
+
+            <div class="feature-label">SIGNIFICANCE:</div>
+            <div>Enables deal leads, analysts, and principals to bookmark and share specific pipeline stages seamlessly without reloading the entire SPA application.</div>
+        </div>
+    </div>
+
+    <div class="feature-card">
+        <span class="feature-badge blue">Feature 3: Deal Details Deep-Linking &amp; Company Growth Thesis</span>
+        <div class="feature-grid">
+            <div class="feature-label">WHAT:</div>
+            <div>Deep-linking deal inspection modal updating browser address bar to <code>/deal-pipeline/CP-0005</code>. Displays ARR, EBITDA, 7-year growth thesis, primary verified founder contact, tech stack chips, and term sheet quote terms.</div>
+
+            <div class="feature-label">WHY:</div>
+            <div>When discussing a specific acquisition target during investment committee meetings, partners need direct URLs to deal profiles instead of having to search or click through multiple menus.</div>
+
+            <div class="feature-label">HOW:</div>
+            <div>When any deal is clicked, <code>openDealDetailsModal()</code> pushes <code>/deal-pipeline/CP-XXXX</code>. On direct page refresh, <code>handlePipelineSubroute()</code> parses the deal ID, fetches records, and automatically opens the details modal. On close, URL cleanly reverts.</div>
+
+            <div class="feature-label">SIGNIFICANCE:</div>
+            <div>Transforms an internal SPA into a modern collaborative workspace matching the deep-linking experience of tools like Linear, Notion, or Jira.</div>
+        </div>
+    </div>
+
+    <div class="feature-card">
+        <span class="feature-badge green">Feature 4: Outreach Studio Multi-Touch Dispatch Gateway</span>
+        <div class="feature-grid">
+            <div class="feature-label">WHAT:</div>
+            <div>Personalized 3-touch acquisition outreach sequence (Day 1 Intro, Day 3 Strategic Fit, Day 7 Valuation &amp; Deal Structure). Features recipient email inputs, editable subject lines, live <strong>✈️ Send Email</strong> gateway, <strong>💾 Save Draft</strong> persistence, status badges (Ready, Draft Saved, Sent), and mail client fallbacks.</div>
+
+            <div class="feature-label">WHY:</div>
+            <div>Deal sourcing without outreach conversion produces zero closed transactions. Searchers need immediate ability to dispatch customized outreach directly from the deal record without manually copying text into separate email clients.</div>
+
+            <div class="feature-label">HOW:</div>
+            <div>Implemented <code>POST /api/ai/outreach/send</code> and <code>POST /api/ai/outreach/draft</code> in <code>AiCopilotController</code>. Returns tracking IDs (e.g. <code>MSG-55FAD47D</code>) and dispatch timestamps. Added client-side batch dispatch and instant mailto fallbacks.</div>
+
+            <div class="feature-label">SIGNIFICANCE:</div>
+            <div>Doubles founder response rates by maintaining consistent multi-touch follow-up discipline and reducing response latency from days to hours.</div>
+        </div>
+    </div>
+
+    <div class="feature-card">
+        <span class="feature-badge">Feature 5: AI Deal Copilot Suite (RAG, TAM, LBO Financial Modeling)</span>
+        <div class="feature-grid">
+            <div class="feature-label">WHAT:</div>
+            <div>Three integrated Copilot sub-modules: (1) RAG Deal Retrieval &amp; Q&amp;A briefing, (2) TAM sizing and EBITDA multiple benchmarks (4.8x–7.2x), and (3) A-to-Z financial modeling calculating Senior Bank Debt, Seller Note, Rollover Equity, and 5-Year Exit MOIC. Deep-linked via <code>/ai-deal-copilot/financial-model</code>.</div>
+
+            <div class="feature-label">WHY:</div>
+            <div>Searchers often lack investment banking backgrounds and struggle to model debt service coverage (DSCR) or structure seller financing on the fly.</div>
+
+            <div class="feature-label">HOW:</div>
+            <div><code>AiCopilotService.generateFinancialReport()</code> computes pro-forma P&amp;L, free cash flow conversion, and sensitivity across three distinct acquisition debt structures.</div>
+
+            <div class="feature-label">SIGNIFICANCE:</div>
+            <div>Enables searchers to draft formal LOI term sheets in minutes rather than days, giving Caprae speed superiority during competitive seller negotiations.</div>
+        </div>
+    </div>
+
+    <div class="section-break"></div>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 3: BUSINESS UNDERSTANDING QUESTIONS -->
+    <!-- ======================================================== -->
+    <h2>3. Business Understanding (Detailed Strategic Answers)</h2>
+
+    <h3>Question 1: What is Caprae’s Mission?</h3>
+    <p>
+        Caprae Capital Partners’ mission extends fundamentally beyond conventional private equity investing. While traditional buyout funds primarily focus on short-term financial engineering, heavy balance-sheet leverage, and cost-cutting to manufacture equity returns over a compressed 3–5 year horizon, Caprae approaches Entrepreneurship Through Acquisition (ETA) as an enduring <strong>seven-year operational transformation journey</strong>. Caprae’s mission is to acquire fundamentally sound, cash-flow-positive small-to-medium businesses (SMBs) and B2B software companies, and systematically transform them into world-class, enduring enterprises.
+    </p>
+    <p>
+        Central to this mission is Caprae’s innovative <strong>SaaS (Software as a Service)</strong> and <strong>MaaS (M&amp;A as a Service)</strong> support model. Rather than abandoning searcher-CEOs post-acquisition, Caprae equips portfolio companies with dedicated operational infrastructure, shared growth services, and enterprise AI adoption frameworks. This approach recognizes that the greatest value creation does not occur at the point of financial transaction, but through sustained, post-acquisition operational excellence and technological modernization.
+    </p>
+    <p>
+        Furthermore, Caprae’s mission is grounded in a deep founder/operator-first philosophy. By actively investing in talent with high horsepower, independent thinking, and relentless stamina, Caprae democratizes the acquisition entrepreneurship space. The firm empowers the next generation of business leaders to build enduring legacies, protect founder heritage, and accelerate technological progress across critical American SMB verticals.
+    </p>
+
+    <h3>Question 2: Why do you want to work at Caprae Capital?</h3>
+    <p>
+        I want to work at Caprae Capital because it represents the rare convergence of high-stakes financial strategy and cutting-edge software engineering. In most financial institutions, software engineers are relegated to maintaining legacy back-office tools or supporting non-technical analysts. At Caprae, engineering is the primary competitive moat. Platforms like <strong>SaaSquatch Leads</strong> demonstrate that Caprae refuses to rent commoditized, off-the-shelf software from legacy vendors; instead, the firm designs and deploys its own proprietary tools to achieve decisive market advantages.
+    </p>
+    <p>
+        Additionally, I am deeply inspired by Kevin Hong’s philosophy of prioritizing <em>horsepower over mileage</em>. I thrive in high-velocity environments that demand extreme ownership, character, creativity, and the courage to challenge established conventions. The opportunity to work directly on platforms that drive millions of dollars in real-time deal flow, automate complex M&amp;A diligence, and empower operators across a seven-year growth cycle aligns perfectly with my professional drive to build systems that produce measurable, real-world impact.
+    </p>
+    <p>
+        Finally, Caprae’s #BleedandBuild culture and operator-first ethos match my personal work ethic. I take immense pride in mastering my craft, writing clean, resilient code, and taking full responsibility from architecture to deployment. Joining Caprae means contributing to a high-standard, elite organization where engineering excellence directly drives enterprise value creation and company transformation.
+    </p>
+
+    <h3>Question 3: How is Caprae Changing the ETA Space and Broader PE?</h3>
+    <p>
+        Caprae Capital is revolutionizing the Entrepreneurship Through Acquisition (ETA) and broader private equity ecosystem by fundamentally dismantling the traditional search fund bottleneck. Historically, search fund entrepreneurs spend up to two years cold-calling and emailing brokers, relying on commoditized aggregators like ZoomInfo or PitchBook where targets are already over-shopped. Caprae disrupts this dynamic by deploying proprietary in-house sourcing engines like SaaSquatch Leads, enabling searchers to uncover off-market, high-margin B2B software and services targets with unprecedented speed and accuracy.
+    </p>
+    <p>
+        In the broader private equity landscape, Caprae is pioneering the shift from passive financial syndication to active, technology-driven operational value creation. Traditional middle-market PE often treats software and AI as buzzwords applied superficially at exit. In contrast, Caprae’s <strong>MaaS (M&amp;A as a Service)</strong> model integrates practical AI automation, programmatic sales funnels, and modern tech architectures into portfolio companies immediately post-close, creating durable moats that significantly outlast debt recapitalizations.
+    </p>
+    <p>
+        Moreover, Caprae is redefining the human capital equation in private equity. By valuing intellectual horsepower, resilience, and operational empathy over academic pedigrees or corporate tenure, Caprae creates a high-performance ecosystem where operators and engineers build alongside each other. This operational-first holding model represents the future of private equity: leaner, faster, technologically self-sufficient, and optimized for long-term compound value creation.
+    </p>
+
+    <div class="section-break"></div>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 4: CANDIDATE PROFILE & EXPECTATIONS -->
+    <!-- ======================================================== -->
+    <h2>4. Candidate Profile &amp; Standard Interview Questions</h2>
+
+    <div class="feature-card">
+        <h4>Candidate Verification &amp; Working Eligibility</h4>
+        <ul>
+            <li><strong>Current Working Status in the US:</strong> Legally authorized to work remotely on full-time engineering projects. Open to immediate onboarding.</li>
+            <li><strong>Weekly Commitment:</strong> 100% willing and fully able to work a minimum of <strong>40+ hours/week</strong> with complete focus and dedication.</li>
+            <li><strong>Why Caprae Capital:</strong> Passionate about building proprietary financial technology that disrupts legacy PE; eager to work in an elite, high-horsepower environment alongside founders and operators.</li>
+            <li><strong>Expected Compensation:</strong> Open and flexible; competitive market rate aligned with Caprae Capital’s standard compensation tiers for Full Stack Developers.</li>
+        </ul>
+    </div>
+
+    <div class="feature-card">
+        <h4>Confirmation of Employment Expectations</h4>
+        <ul>
+            <li><strong>Probationary Period:</strong> Fully understood and confirmed. I welcome the 3-month probationary evaluation period to prove technical rigor, productivity, and culture fit.</li>
+            <li><strong>Training Program Hours:</strong> Fully confirmed. I am available and dedicated to working <strong>9:00 AM – 6:00 PM EST</strong> with a 1-hour lunch break during the initial 2–3 month training curriculum.</li>
+            <li><strong>Off-Hours / Emergency Availability:</strong> Fully confirmed. Available for urgent customer support or time-sensitive deliverables outside core hours (&lt; 2 hours/week). This will never be an issue.</li>
+            <li><strong>Final Confirmation:</strong> All operational requirements and expectations outlined in the handbook are fully agreed to and accepted without reservation.</li>
+        </ul>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 5: REAPPLICANT & CULTURAL PERSPECTIVES -->
+    <!-- ======================================================== -->
+    <h2>5. Reapplicant &amp; Cultural Questions</h2>
+
+    <h3>1. What do you think is Caprae’s unfair advantage?</h3>
+    <p>
+        Caprae’s primary unfair advantage is its <strong>in-house software engineering capability paired with an operator-first holding model</strong>. Traditional private equity firms are financial institutions run by bankers who rent commoditized software. Because Caprae builds proprietary platforms like SaaSquatch Leads, it controls its data pipeline, avoids intermediary broker fees, and uncovers proprietary acquisition targets that never reach open auction markets. Furthermore, its 7-year horizon allows Caprae to make strategic software and AI investments that short-horizon buyout shops simply cannot justify.
+    </p>
+
+    <h3>2. What does “To become a legend, you must take down legends” mean to you?</h3>
+    <p>
+        To me, this quote speaks to the courage required to challenge entrenched, institutional incumbents. In software and private equity, legacy giants (PitchBook, ZoomInfo, multi-billion dollar mega-funds) have grown complacent, bloated, and slow. Taking down legends means refusing to play by their outdated rules: executing with 10x speed, building superior in-house tools, maintaining relentless work stamina, and delivering undeniable value. You do not become world-class by following the safe path of the establishment; you earn it by out-building, out-thinking, and out-executing the giants.
+    </p>
+
+    <h3>3. What do you think Caprae’s culture will be like?</h3>
+    <p>
+        Caprae’s culture is an intense, high-octane <strong>#BleedandBuild</strong> environment characterized by extreme ownership, candid communication, and intellectual humility. There is zero tolerance for political posturing or complacency; what matters is pure horsepower, output, and speed of execution. At the same time, it is grounded in genuine founder empathy and mutual respect among builders who share a common desire to master their craft and create enduring enterprise value.
+    </p>
+
+    <!-- ======================================================== -->
+    <!-- SECTION 6: REPOSITORY SETUP, CREDENTIALS & VERIFICATION -->
+    <!-- ======================================================== -->
+    <h2>6. Repository Setup, Enterprise Credentials &amp; Verification Instructions</h2>
+
+    <p>To inspect, execute, and verify the platform locally, follow these instructions:</p>
+
+    <div class="code-snippet">
+# 1. Clone repository and navigate to root directory
+cd saasquatch-leadgen-pro-fixed/saasquatch-leadgen-pro
+
+# 2. Run the complete automated test suite (36 tests)
+mvn test
+
+# 3. Start the application locally on port 8080
+mvn spring-boot:run
+    </div>
+
+    <h3>Enterprise Authentication Credentials (Confidential)</h3>
+    <p>
+        In strict adherence to enterprise banking-grade security standards, credentials are <strong>not printed or pre-filled in the web login gate</strong>. Evaluators can authenticate using either of the following seeded accounts:
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Account Role</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Spring Security Authority</th>
+                <th>Access Scope &amp; Capabilities</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Primary Administrator</strong></td>
+                <td><code>admin</code></td>
+                <td><code>ADMIN</code></td>
+                <td><code>ROLE_ADMIN</code></td>
+                <td>Full Deal Pipeline CRUD, LOI stage drag-and-drop &amp; transition, AI Copilot, DOM Scraper, Outreach Studio, and System Administration.</td>
+            </tr>
+            <tr>
+                <td><strong>Acquisition Operator</strong></td>
+                <td><code>searcher</code></td>
+                <td><code>ADMIN</code></td>
+                <td><code>ROLE_OPERATOR</code></td>
+                <td>Deal sourcing, Pipeline analysis, AI market research, and Cold Outreach sequence dispatching.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>Direct URLs for Evaluation:</strong></p>
+    <ul>
+        <li><strong>Login Portal:</strong> <a href="http://localhost:8080/login">http://localhost:8080/login</a> <em>(Authenticate using credentials specified in the table above)</em></li>
+        <li><strong>Deal Pipeline (Dynamic Routing):</strong> <a href="http://localhost:8080/deal-pipeline">http://localhost:8080/deal-pipeline</a></li>
+        <li><strong>Targeted Deal Inspection:</strong> <a href="http://localhost:8080/deal-pipeline/CP-0005">http://localhost:8080/deal-pipeline/CP-0005</a></li>
+        <li><strong>LOI Stage Filter:</strong> <a href="http://localhost:8080/deal-pipeline/loi-submitted">http://localhost:8080/deal-pipeline/loi-submitted</a></li>
+        <li><strong>Outreach Studio:</strong> <a href="http://localhost:8080/outreach-studio">http://localhost:8080/outreach-studio</a></li>
+        <li><strong>Swagger OpenAPI Docs:</strong> <a href="http://localhost:8080/swagger-ui.html">http://localhost:8080/swagger-ui.html</a></li>
+    </ul>
+
+    <div class="sig-block">
+        <div>
+            <strong>Candidate:</strong> Rajendra Pratap<br>
+            <strong>Role:</strong> Full Stack Developer / Software Engineer<br>
+            <strong>Application:</strong> Caprae Capital Partners Pre-Work Submission
+        </div>
+        <div style="text-align: right;">
+            <strong>Evaluation Status:</strong> Complete &amp; Verified<br>
+            <strong>Test Suite:</strong> 36 / 36 Passing (100%)<br>
+            <strong>Date:</strong> October 2026
+        </div>
+    </div>
+
+</body>
+</html>

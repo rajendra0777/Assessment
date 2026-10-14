@@ -59,6 +59,18 @@ class AuthServiceTest {
     }
 
     @Test
+    @DisplayName("Bootstrap default password ADMIN is accepted when configured")
+    void defaultAdminPasswordAccepted() {
+        AuthService defaultService = new AuthService(users, encoder, new JwtTokenProvider("", 3_600_000L));
+        ReflectionTestUtils.setField(defaultService, "seedPassword", "ADMIN");
+        User testAdmin = new User(2L, "admin", "admin@capraecapital.com", encoder.encode("ADMIN"), "Admin", "ROLE_ADMIN", "key");
+        when(users.findByUsername("admin")).thenReturn(Optional.of(testAdmin));
+        AuthResponse res = defaultService.login(req("admin", "ADMIN"));
+        assertNotNull(res.getToken());
+        assertEquals("ROLE_ADMIN", res.getRole());
+    }
+
+    @Test
     @DisplayName("Regression: the old hardcoded passwords no longer work")
     void oldBackdoorsAreGone() {
         assertThrows(BadCredentialsException.class, () -> service.login(req("admin", "Caprae2025!")));

@@ -56,11 +56,11 @@ public class AuthService {
             return;
         }
         String password = seedPassword;
-        if (password == null || password.length() < 10) {
+        if (password == null || password.isBlank()) {
             byte[] bytes = new byte[18];
             new SecureRandom().nextBytes(bytes);
             password = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-            log.warn("SEED_PASSWORD not set (or shorter than 10 chars). Generated one-time password for 'admin' and 'searcher': {}", password);
+            log.warn("SEED_PASSWORD not set. Generated one-time password for 'admin' and 'searcher': {}", password);
         }
         if (needsAdmin) {
             userRepository.save(new User(null, "admin", "admin@capraecapital.com", passwordEncoder.encode(password),

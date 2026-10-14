@@ -158,13 +158,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // AUTHENTICATION & RESTRICTION GATE
     // ==========================================
     function checkAuthSession() {
+        const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
         if (!jwtToken || !authUser) {
             // First time visit or signed out: strictly restrict user with Login Gate
             loginGateModal.classList.remove('hidden');
+            if (path === '/' || path === '' || path === '/login') {
+                window.history.replaceState({ isLogin: true }, '', '/login');
+            }
             navUserName.textContent = 'Restricted';
             navUserRole.textContent = 'LOCKED';
             btnAuthAction.textContent = 'Sign In';
-            btnAuthAction.onclick = () => loginGateModal.classList.remove('hidden');
+            btnAuthAction.onclick = () => {
+                loginGateModal.classList.remove('hidden');
+                if (window.location.pathname !== '/login') {
+                    window.history.pushState({ isLogin: true }, '', '/login');
+                }
+            };
         } else {
             // User session active
             loginGateModal.classList.add('hidden');
@@ -195,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!res.ok) {
-                throw new Error('Invalid username or password. Too many failed attempts will temporarily lock the account.');
+                throw new Error('Invalid enterprise credentials. Please check your username and password.');
             }
 
             const data = await res.json();
@@ -207,6 +216,12 @@ document.addEventListener('DOMContentLoaded', () => {
             loginGateModal.classList.add('hidden');
             updateAuthUI();
             showToast(`Welcome, ${data.fullName || data.username}! Access granted.`);
+
+            // Navigate from /login to /deal-pipeline on successful login
+            const curPath = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
+            if (curPath === '/login' || curPath === '/') {
+                activateTab('pipeline-tab', true);
+            }
 
             loadDashboardMetrics();
             loadLeads();
@@ -229,6 +244,9 @@ document.addEventListener('DOMContentLoaded', () => {
         updateAuthUI();
         showToast('Signed out securely. Please log in to continue.');
         loginGateModal.classList.remove('hidden');
+        if (window.location.pathname !== '/login') {
+            window.history.pushState({ isLogin: true }, '', '/login');
+        }
     }
 
     function updateAuthUI() {
@@ -245,7 +263,12 @@ document.addEventListener('DOMContentLoaded', () => {
             navUserName.textContent = 'Restricted';
             navUserRole.textContent = 'LOCKED';
             btnAuthAction.textContent = 'Sign In';
-            btnAuthAction.onclick = () => loginGateModal.classList.remove('hidden');
+            btnAuthAction.onclick = () => {
+                loginGateModal.classList.remove('hidden');
+                if (window.location.pathname !== '/login') {
+                    window.history.pushState({ isLogin: true }, '', '/login');
+                }
+            };
         }
     }
 
@@ -256,9 +279,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const btnFillAdmin = document.getElementById('btn-fill-admin');
+    const btnFillSearcher = document.getElementById('btn-fill-searcher');
+    if (btnFillAdmin) {
+        btnFillAdmin.addEventListener('click', () => {
+            loginUsername.value = 'admin';
+            loginPassword.value = 'ADMIN';
+        });
+    }
+    if (btnFillSearcher) {
+        btnFillSearcher.addEventListener('click', () => {
+            loginUsername.value = 'searcher';
+            loginPassword.value = 'ADMIN';
+        });
+    }
+
     if (userPillContainer) {
         userPillContainer.addEventListener('click', () => {
-            if (!jwtToken) loginGateModal.classList.remove('hidden');
+            if (!jwtToken) {
+                loginGateModal.classList.remove('hidden');
+                if (window.location.pathname !== '/login') {
+                    window.history.pushState({ isLogin: true }, '', '/login');
+                }
+            }
         });
     }
 
@@ -317,20 +360,120 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // NAVIGATION & SINGLE PAGE RESPONSE ROUTING
     // ==========================================
+    // ==========================================
+    // DYNAMIC URL ROUTING & QUERY MANAGEMENT
+    // ==========================================
+    const tabRoutes = {
+        'pipeline-tab': '/deal-pipeline',
+        'scraper-tab': '/real-time-sourcing',
+        'copilot-tab': '/ai-deal-copilot',
+        'outreach-tab': '/outreach-studio',
+        'analytics-tab': '/pipeline-analytics',
+        'api-tab': '/api-docs'
+    };
+
+    const routeToTab = {
+        '/deal-pipeline': 'pipeline-tab',
+        '/real-time-sourcing': 'scraper-tab',
+        '/ai-deal-copilot': 'copilot-tab',
+        '/outreach-studio': 'outreach-tab',
+        '/pipeline-analytics': 'analytics-tab',
+        '/api-docs': 'api-tab',
+        '/api-and-docs': 'api-tab',
+        '/': 'pipeline-tab',
+        '/index.html': 'pipeline-tab'
+    };
+
+    const statusSlugToVal = {
+        'sourced': 'SOURCED',
+        'qualified': 'QUALIFIED',
+        'diligence': 'DILIGENCE',
+        'in-diligence': 'DILIGENCE',
+        'loi-submitted': 'LOI_SUBMITTED',
+        'loi_submitted': 'LOI_SUBMITTED',
+        'loi': 'LOI_SUBMITTED',
+        'closed': 'CLOSED'
+    };
+
+    const statusValToSlug = {
+        'SOURCED': 'sourced',
+        'QUALIFIED': 'qualified',
+        'DILIGENCE': 'diligence',
+        'LOI_SUBMITTED': 'loi-submitted',
+        'CLOSED': 'closed'
+    };
+
+    const subtabSlugMap = {
+        'subtab-rag': 'rag',
+        'subtab-market': 'market-research',
+        'subtab-finance': 'financial-model'
+    };
+
+    const slugToSubtabMap = {
+        'rag': 'subtab-rag',
+        'market-research': 'subtab-market',
+        'tam': 'subtab-market',
+        'benchmarks': 'subtab-market',
+        'financial-model': 'subtab-finance',
+        'finance': 'subtab-finance',
+        'lbo': 'subtab-finance'
+    };
+
+    let pendingModalDealId = null;
+    let pendingOutreachLeadId = null;
+
+    function parseCurrentRoute() {
+        const fullPath = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
+        const searchParams = new URLSearchParams(window.location.search);
+        const parts = fullPath.split('/').filter(Boolean);
+
+        const mainSegment = parts[0] || '';
+        const subSegment = parts[1] || '';
+
+        return { fullPath, mainSegment, subSegment, searchParams };
+    }
+
+    function updatePipelineUrl(push = true) {
+        if (dealDetailsModal && !dealDetailsModal.classList.contains('hidden')) {
+            return;
+        }
+
+        let path = '/deal-pipeline';
+        const statusVal = filterStatus ? filterStatus.value : '';
+        if (statusVal && statusValToSlug[statusVal]) {
+            path += `/${statusValToSlug[statusVal]}`;
+        }
+
+        const params = new URLSearchParams();
+        if (filterSearch && filterSearch.value.trim()) params.set('q', filterSearch.value.trim());
+        if (filterIndustry && filterIndustry.value) params.set('industry', filterIndustry.value);
+        if (filterPriority && filterPriority.value) params.set('priority', filterPriority.value);
+        if (filterMinScore && parseInt(filterMinScore.value, 10) > 0) params.set('minScore', filterMinScore.value);
+
+        const qs = params.toString() ? `?${params.toString()}` : '';
+        const fullUrl = `${path}${qs}`;
+        if (window.location.pathname + window.location.search !== fullUrl) {
+            if (push) {
+                window.history.pushState({ tabId: 'pipeline-tab', statusVal }, '', fullUrl);
+            } else {
+                window.history.replaceState({ tabId: 'pipeline-tab', statusVal }, '', fullUrl);
+            }
+        }
+    }
+
     function initNavigationTabs() {
-        // "KAPRAE CAPITAL" redirect to home page (Deal Pipeline)
+        // "CAPRAE CAPITAL" redirect to home page (Deal Pipeline)
         if (brandHomeLink) {
             brandHomeLink.addEventListener('click', () => {
-                activateTab('pipeline-tab');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                activateTab('pipeline-tab', true);
             });
         }
 
-        // Header Navigation Tabs
+        // Header Navigation Tabs with dynamic routes
         navTabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 const targetTabId = tab.getAttribute('data-tab');
-                activateTab(targetTabId);
+                activateTab(targetTabId, true);
             });
         });
 
@@ -339,13 +482,193 @@ document.addEventListener('DOMContentLoaded', () => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const tabId = link.getAttribute('data-tab') || 'pipeline-tab';
-                activateTab(tabId);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                activateTab(tabId, true);
             });
         });
+
+        // Browser Back/Forward history support
+        window.addEventListener('popstate', (e) => {
+            const { fullPath, mainSegment, subSegment, searchParams } = parseCurrentRoute();
+            if (fullPath === '/login') {
+                loginGateModal.classList.remove('hidden');
+                return;
+            } else {
+                loginGateModal.classList.add('hidden');
+            }
+
+            if (mainSegment === 'deal-pipeline') {
+                activateTab('pipeline-tab', false);
+                if (subSegment && (subSegment.toLowerCase().startsWith('cp-') || /^\d+$/.test(subSegment))) {
+                    pendingModalDealId = subSegment;
+                    checkPendingDealModal();
+                } else {
+                    if (dealDetailsModal) dealDetailsModal.classList.add('hidden');
+                    if (subSegment && statusSlugToVal[subSegment.toLowerCase()]) {
+                        filterStatus.value = statusSlugToVal[subSegment.toLowerCase()];
+                    } else {
+                        filterStatus.value = '';
+                    }
+                    if (searchParams.get('q')) filterSearch.value = searchParams.get('q');
+                    else filterSearch.value = '';
+                    applyFilters(false);
+                }
+                return;
+            }
+
+            if (dealDetailsModal) dealDetailsModal.classList.add('hidden');
+
+            const targetTab = (e.state && e.state.tabId) || routeToTab[fullPath] || routeToTab['/' + mainSegment] || 'pipeline-tab';
+            activateTab(targetTab, false);
+        });
+
+        // Resolve current URL route on initial page load
+        handleInitialRoute();
     }
 
-    function activateTab(tabId) {
+    function handleInitialRoute() {
+        const { fullPath, mainSegment, subSegment, searchParams } = parseCurrentRoute();
+
+        if (fullPath === '/login') {
+            if (!jwtToken) {
+                loginGateModal.classList.remove('hidden');
+                window.history.replaceState({ isLogin: true }, '', '/login');
+            } else {
+                activateTab('pipeline-tab', false);
+                window.history.replaceState({ tabId: 'pipeline-tab' }, '', '/deal-pipeline');
+            }
+            return;
+        }
+
+        // Deal Pipeline: /deal-pipeline or /deal-pipeline/<status> or /deal-pipeline/<deal-id>
+        if (mainSegment === 'deal-pipeline') {
+            activateTab('pipeline-tab', false);
+            handlePipelineSubroute(subSegment, searchParams);
+            return;
+        }
+
+        // Real-Time Sourcing: /real-time-sourcing
+        if (mainSegment === 'real-time-sourcing') {
+            activateTab('scraper-tab', false);
+            if (searchParams.get('prompt') || searchParams.get('q')) {
+                aiPromptInput.value = searchParams.get('prompt') || searchParams.get('q');
+            }
+            if (searchParams.get('industry') && scrapeIndustry) {
+                scrapeIndustry.value = searchParams.get('industry');
+            }
+            if (searchParams.get('region') && scrapeRegion) {
+                scrapeRegion.value = searchParams.get('region');
+            }
+            return;
+        }
+
+        // AI Deal Copilot: /ai-deal-copilot or /ai-deal-copilot/<subtab>
+        if (mainSegment === 'ai-deal-copilot') {
+            activateTab('copilot-tab', false);
+            if (subSegment && slugToSubtabMap[subSegment]) {
+                activateSubTab(slugToSubtabMap[subSegment], false);
+            }
+            return;
+        }
+
+        // Outreach Studio: /outreach-studio or /outreach-studio/<deal-id>
+        if (mainSegment === 'outreach-studio') {
+            activateTab('outreach-tab', false);
+            if (subSegment || searchParams.get('leadId')) {
+                pendingOutreachLeadId = subSegment || searchParams.get('leadId');
+            }
+            return;
+        }
+
+        // Pipeline Analytics: /pipeline-analytics
+        if (mainSegment === 'pipeline-analytics') {
+            activateTab('analytics-tab', false);
+            if (searchParams.get('sortBy') && analyticsSortBy) {
+                analyticsSortBy.value = searchParams.get('sortBy');
+                renderAnalyticsVisuals();
+            }
+            return;
+        }
+
+        // API & Docs: /api-docs or /api-and-docs
+        if (mainSegment === 'api-docs' || mainSegment === 'api-and-docs') {
+            activateTab('api-tab', false);
+            return;
+        }
+
+        const initialTab = routeToTab[fullPath] || 'pipeline-tab';
+        activateTab(initialTab, false);
+        const canonicalRoute = tabRoutes[initialTab] || '/deal-pipeline';
+        window.history.replaceState({ tabId: initialTab }, '', canonicalRoute);
+    }
+
+    function handlePipelineSubroute(subSegment, searchParams) {
+        if (!subSegment && !searchParams.toString()) {
+            return;
+        }
+
+        // Case 1: Subsegment is a Deal ID (e.g. CP-0005, cp-1001, 5)
+        if (subSegment && (subSegment.toLowerCase().startsWith('cp-') || /^\d+$/.test(subSegment))) {
+            pendingModalDealId = subSegment;
+            if (allLeads && allLeads.length > 0) {
+                checkPendingDealModal();
+            }
+            return;
+        }
+
+        // Case 2: Subsegment is a status filter (e.g. sourced, qualified, diligence, loi-submitted, closed)
+        if (subSegment && statusSlugToVal[subSegment.toLowerCase()]) {
+            filterStatus.value = statusSlugToVal[subSegment.toLowerCase()];
+        }
+
+        if (searchParams.get('q')) filterSearch.value = searchParams.get('q');
+        if (searchParams.get('industry')) filterIndustry.value = searchParams.get('industry');
+        if (searchParams.get('priority')) filterPriority.value = searchParams.get('priority');
+        if (searchParams.get('minScore')) {
+            filterMinScore.value = searchParams.get('minScore');
+            scoreValLabel.textContent = searchParams.get('minScore');
+        }
+
+        if (allLeads && allLeads.length > 0) {
+            applyFilters(false);
+        }
+    }
+
+    function checkPendingDealModal() {
+        if (!pendingModalDealId || !allLeads || allLeads.length === 0) return;
+        const normalized = pendingModalDealId.toLowerCase();
+        const idNum = normalized.replace(/^cp-/i, '');
+        const target = allLeads.find(l =>
+            String(l.id) === idNum ||
+            `cp-${String(l.id).padStart(4, '0')}`.toLowerCase() === normalized
+        );
+        if (target) {
+            openDealDetailsModal(target, false);
+            pendingModalDealId = null;
+        }
+    }
+
+    function checkPendingOutreach() {
+        if (!pendingOutreachLeadId || !allLeads || allLeads.length === 0) return;
+        const normalized = pendingOutreachLeadId.toLowerCase();
+        const idNum = normalized.replace(/^cp-/i, '');
+        const target = allLeads.find(l =>
+            String(l.id) === idNum ||
+            `cp-${String(l.id).padStart(4, '0')}`.toLowerCase() === normalized
+        );
+        if (target && outreachLeadSelect) {
+            outreachLeadSelect.value = target.id;
+            const email = getLeadContactEmail(target);
+            for (let i = 1; i <= 3; i++) {
+                const recElem = document.getElementById(`email-recipient-${i}`);
+                if (recElem) recElem.value = email;
+            }
+            updateMailtoLinks();
+            btnGenerateOutreach.click();
+            pendingOutreachLeadId = null;
+        }
+    }
+
+    function activateTab(tabId, updateUrl = true) {
         navTabs.forEach(t => {
             if (t.getAttribute('data-tab') === tabId) t.classList.add('active');
             else t.classList.remove('active');
@@ -356,25 +679,67 @@ document.addEventListener('DOMContentLoaded', () => {
             else c.classList.remove('active');
         });
 
-        if (tabId === 'analytics-tab') {
-            renderAnalyticsVisuals();
+        if (tabId !== 'pipeline-tab' && dealDetailsModal) {
+            dealDetailsModal.classList.add('hidden');
+        }
+
+        // Update URL dynamically in address bar
+        if (updateUrl) {
+            if (tabId === 'pipeline-tab') {
+                updatePipelineUrl(true);
+            } else if (tabRoutes[tabId]) {
+                const newRoute = tabRoutes[tabId];
+                if (window.location.pathname !== newRoute) {
+                    window.history.pushState({ tabId }, '', newRoute);
+                }
+            }
+        }
+
+        // Initialize tab-specific data with 100% accuracy
+        if (tabId === 'pipeline-tab') {
+            renderPipeline();
         } else if (tabId === 'scraper-tab') {
             renderSourcingRadar();
+        } else if (tabId === 'copilot-tab') {
+            updateDropdowns(allLeads);
         } else if (tabId === 'outreach-tab') {
             populateOutreachDropdown(allLeads);
+        } else if (tabId === 'analytics-tab') {
+            renderAnalyticsVisuals();
+        } else if (tabId === 'api-tab') {
+            if (authUser && authUser.apiKey) {
+                const apiKeyElem = document.getElementById('api-key-display');
+                if (apiKeyElem) apiKeyElem.textContent = authUser.apiKey;
+            }
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function activateSubTab(subtabId, updateUrl = true) {
+        subTabs.forEach(t => {
+            if (t.getAttribute('data-subtab') === subtabId) t.classList.add('active');
+            else t.classList.remove('active');
+        });
+        subtabContents.forEach(c => {
+            if (c.id === subtabId) c.classList.add('active');
+            else c.classList.remove('active');
+        });
+
+        if (updateUrl && subtabSlugMap[subtabId]) {
+            const subSlug = subtabSlugMap[subtabId];
+            const newUrl = `/ai-deal-copilot/${subSlug}`;
+            if (window.location.pathname !== newUrl) {
+                window.history.pushState({ tabId: 'copilot-tab', subtabId }, '', newUrl);
+            }
         }
     }
 
     function initSubTabs() {
         subTabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                subTabs.forEach(t => t.classList.remove('active'));
-                subtabContents.forEach(c => c.classList.remove('active'));
-
-                tab.classList.add('active');
                 const targetSub = tab.getAttribute('data-subtab');
-                const targetElem = document.getElementById(targetSub);
-                if (targetElem) targetElem.classList.add('active');
+                activateSubTab(targetSub, true);
             });
         });
     }
@@ -427,16 +792,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await apiFetch(`${API_BASE}/leads`);
             if (!res.ok) throw new Error('API error loading leads');
             allLeads = await res.json();
-            applyFilters();
+            applyFilters(false);
             updateDropdowns(allLeads);
             renderSourcingRadar();
             renderAnalyticsVisuals();
+
+            // Open pending modal deal or outreach lead if routed directly by URL
+            checkPendingDealModal();
+            checkPendingOutreach();
         } catch (err) {
             console.error(err);
         }
     }
 
-    function applyFilters() {
+    function applyFilters(updateUrl = true) {
         const query = filterSearch.value.trim().toLowerCase();
         const industry = filterIndustry.value;
         const status = filterStatus.value;
@@ -488,6 +857,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset to page 1 on filter changes
         currentPage = 1;
         renderPipeline();
+
+        if (updateUrl) {
+            updatePipelineUrl(true);
+        }
     }
 
     function renderPipeline() {
@@ -542,10 +915,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     function renderKanban(leads) {
         const stages = ['SOURCED', 'QUALIFIED', 'DILIGENCE', 'LOI_SUBMITTED', 'CLOSED'];
+        const stageColMap = {
+            'SOURCED': 'sourced',
+            'QUALIFIED': 'qualified',
+            'DILIGENCE': 'diligence',
+            'LOI_SUBMITTED': 'loi',
+            'CLOSED': 'closed'
+        };
+
         stages.forEach(st => {
-            const colKey = st.toLowerCase().replace('_', '');
-            const colBody = document.getElementById(`col-${colKey}`);
-            const colCount = document.getElementById(`count-${colKey}`);
+            const colKey = stageColMap[st] || st.toLowerCase().replace(/_/g, '');
+            const colBody = document.getElementById(`col-${colKey}`) || document.getElementById(`col-${st.toLowerCase().replace(/_/g, '')}`);
+            const colCount = document.getElementById(`count-${colKey}`) || document.getElementById(`count-${st.toLowerCase().replace(/_/g, '')}`);
             if (!colBody) return;
 
             const filtered = leads.filter(l => (l.status || 'SOURCED').toUpperCase() === st);
@@ -647,23 +1028,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // HTML5 DRAG & DROP FOR STAGES
     // ==========================================
     function setupDragAndDrop() {
-        const columns = document.querySelectorAll('.kanban-col-body');
-        columns.forEach(col => {
-            col.addEventListener('dragover', (e) => {
+        const dropZones = document.querySelectorAll('.kanban-col, .kanban-col-body');
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
-                col.classList.add('drag-hover');
+                const colBody = zone.classList.contains('kanban-col-body') ? zone : zone.querySelector('.kanban-col-body');
+                if (colBody) colBody.classList.add('drag-hover');
             });
 
-            col.addEventListener('dragleave', () => {
-                col.classList.remove('drag-hover');
+            zone.addEventListener('dragleave', (e) => {
+                if (!zone.contains(e.relatedTarget)) {
+                    const colBody = zone.classList.contains('kanban-col-body') ? zone : zone.querySelector('.kanban-col-body');
+                    if (colBody) colBody.classList.remove('drag-hover');
+                }
             });
 
-            col.addEventListener('drop', async (e) => {
+            zone.addEventListener('drop', async (e) => {
                 e.preventDefault();
-                col.classList.remove('drag-hover');
+                e.stopPropagation();
+                const colBody = zone.classList.contains('kanban-col-body') ? zone : zone.querySelector('.kanban-col-body');
+                if (colBody) colBody.classList.remove('drag-hover');
+
                 const leadId = e.dataTransfer.getData('text/plain');
-                const targetStage = col.getAttribute('data-stage');
+                const targetStage = zone.getAttribute('data-stage') || zone.closest('[data-stage]')?.getAttribute('data-stage') || colBody?.getAttribute('data-stage');
                 if (leadId && targetStage) {
                     await updateStatus(parseInt(leadId, 10), targetStage);
                 }
@@ -809,7 +1197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // FULL COMPANY DEAL DETAILS MODAL
     // ==========================================
-    function openDealDetailsModal(lead) {
+    function openDealDetailsModal(lead, push = true) {
         const dealIdStr = `CP-${String(lead.id).padStart(4, '0')}`;
         document.getElementById('detail-deal-id').textContent = dealIdStr;
         document.getElementById('detail-company-title').innerHTML = escapeHtml(lead.companyName) + provBadge(lead);
@@ -862,18 +1250,33 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('detail-quote-text').textContent = lead.quoteDetails || 'No active term sheet or acquisition offer generated. Click "Quote" to attach valuation terms.';
 
         document.getElementById('btn-detail-edit').onclick = () => {
-            dealDetailsModal.classList.add('hidden');
+            closeDealDetailsModal();
             openEditDealModal(lead);
         };
 
         document.getElementById('btn-detail-outreach').onclick = () => {
-            dealDetailsModal.classList.add('hidden');
+            closeDealDetailsModal();
             activateTab('outreach-tab');
             outreachLeadSelect.value = lead.id;
             btnGenerateOutreach.click();
         };
 
         dealDetailsModal.classList.remove('hidden');
+
+        if (push) {
+            const dealIdStr = `CP-${String(lead.id).padStart(4, '0')}`;
+            const targetUrl = `/deal-pipeline/${dealIdStr}`;
+            if (window.location.pathname !== targetUrl) {
+                window.history.pushState({ tabId: 'pipeline-tab', dealId: lead.id, isModal: true }, '', targetUrl);
+            }
+        }
+    }
+
+    function closeDealDetailsModal() {
+        if (dealDetailsModal) {
+            dealDetailsModal.classList.add('hidden');
+        }
+        updatePipelineUrl(true);
     }
 
     // ==========================================
@@ -1097,9 +1500,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close Modals
     document.querySelectorAll('.modal-close-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+            const wasDetailOpen = dealDetailsModal && !dealDetailsModal.classList.contains('hidden');
             document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
+            if (wasDetailOpen) {
+                closeDealDetailsModal();
+            }
         });
     });
+
+    if (dealDetailsModal) {
+        dealDetailsModal.addEventListener('click', (e) => {
+            if (e.target === dealDetailsModal) {
+                closeDealDetailsModal();
+            }
+        });
+    }
 
     // ==========================================
     // REAL-TIME SOURCING & PROMPT SCRAPING
@@ -1444,6 +1859,61 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentVal) outreachLeadSelect.value = currentVal;
     }
 
+    // Helper to get selected lead email
+    function getLeadContactEmail(lead) {
+        if (!lead) return 'founder@domain.com';
+        if (lead.primaryEmail) return lead.primaryEmail;
+        if (lead.contacts && lead.contacts.length > 0 && lead.contacts[0].email) return lead.contacts[0].email;
+        if (lead.domain) return `founder@${lead.domain}`;
+        return 'founder@domain.com';
+    }
+
+    function updateMailtoLinks() {
+        for (let i = 1; i <= 3; i++) {
+            const rec = document.getElementById(`email-recipient-${i}`)?.value.trim() || '';
+            const sub = document.getElementById(`email-subject-input-${i}`)?.value.trim() || '';
+            let body = '';
+            if (i === 1) body = document.getElementById('email-body-text')?.value || '';
+            if (i === 2) body = document.getElementById('email-day3-body')?.value || '';
+            if (i === 3) body = document.getElementById('email-day7-body')?.value || '';
+
+            const mailto = document.getElementById(`mailto-touch-${i}`);
+            if (mailto) {
+                mailto.href = `mailto:${encodeURIComponent(rec)}?subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`;
+            }
+        }
+    }
+
+    // Lead select change updates recipient fields
+    if (outreachLeadSelect) {
+        outreachLeadSelect.addEventListener('change', () => {
+            const leadId = outreachLeadSelect.value;
+            const lead = allLeads.find(l => String(l.id) === String(leadId));
+            if (lead) {
+                const email = getLeadContactEmail(lead);
+                for (let i = 1; i <= 3; i++) {
+                    const recElem = document.getElementById(`email-recipient-${i}`);
+                    if (recElem) recElem.value = email;
+                }
+                updateMailtoLinks();
+                const dealIdStr = `CP-${String(lead.id).padStart(4, '0')}`;
+                window.history.pushState({ tabId: 'outreach-tab', leadId: lead.id }, '', `/outreach-studio/${dealIdStr}`);
+            } else {
+                window.history.pushState({ tabId: 'outreach-tab' }, '', '/outreach-studio');
+            }
+        });
+    }
+
+    // Real-time typing updates mailto links
+    ['email-recipient-1', 'email-recipient-2', 'email-recipient-3',
+     'email-subject-input-1', 'email-subject-input-2', 'email-subject-input-3',
+     'email-body-text', 'email-day3-body', 'email-day7-body'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', updateMailtoLinks);
+        }
+    });
+
     btnGenerateOutreach.addEventListener('click', async () => {
         const leadId = outreachLeadSelect.value;
         if (!leadId) {
@@ -1454,6 +1924,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const lead = allLeads.find(l => String(l.id) === String(leadId)) || {};
         const tone = outreachTone.value;
         const sender = outreachSender.value.trim();
+        const recipientEmail = getLeadContactEmail(lead);
 
         btnGenerateOutreach.disabled = true;
         btnGenerateOutreach.innerHTML = '<span>⏳</span> Drafting 3-Touch Sequence...';
@@ -1465,18 +1936,42 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
 
+            // Set recipients
+            for (let i = 1; i <= 3; i++) {
+                const recElem = document.getElementById(`email-recipient-${i}`);
+                if (recElem) recElem.value = recipientEmail;
+            }
+
             // Touch 1
-            emailSubjectLine.textContent = data.subjectLine || `Confidential Acquisition Inquiry // ${lead.companyName}`;
+            const sub1 = document.getElementById('email-subject-input-1');
+            if (sub1) sub1.value = data.subjectLine || `Confidential Acquisition Inquiry // ${lead.companyName}`;
             emailBodyText.value = data.emailBody || '';
 
             // Touch 2 (Day 3)
             const founderName = (lead.contacts && lead.contacts.length > 0) ? lead.contacts[0].fullName.split(' ')[0] : 'there';
-            emailSubjectLine2.textContent = `Re: ${emailSubjectLine.textContent}`;
+            const sub2 = document.getElementById('email-subject-input-2');
+            if (sub2) sub2.value = `Re: ${sub1 ? sub1.value : 'Confidential Acquisition Inquiry'}`;
             emailDay3Body.value = `Hi ${founderName},\n\nFollowing up on my note from Tuesday regarding ${lead.companyName}.\n\nAt Caprae Capital, we specialize in 7-year patient capital rather than rapid flips. Given your ${lead.industry || 'B2B software'} architecture, we see strong alignment with our roll-up thesis, offering valuations structured around ${lead.estimatedEbitda ? formatCurrency(lead.estimatedEbitda * 5.8) : 'attractive EBITDA multiples'} with flexible rollover equity if desired.\n\nAre you open to a brief 10-minute founder-to-operator introduction this Thursday or Friday afternoon?\n\nBest,\n${sender}`;
 
             // Touch 3 (Day 7)
+            const sub3 = document.getElementById('email-subject-input-3');
+            if (sub3) sub3.value = `Re: Permission to close file // ${lead.companyName}`;
             emailDay7Body.value = `Hi ${founderName},\n\nI know you're heavily focused on scaling ${lead.companyName}, so I will keep this brief.\n\nIf acquisition or succession isn't a top priority this quarter, no problem at all. We will keep your metrics on our confidential watch list. Should timing ever align, feel free to reach out directly at this address.\n\nWishing you continued momentum.\n\nWarm regards,\n${sender}`;
 
+            // Reset status badges
+            for (let i = 1; i <= 3; i++) {
+                const badge = document.getElementById(`status-touch-${i}`);
+                if (badge) {
+                    badge.className = 'email-status-badge status-ready';
+                    badge.textContent = 'Ready';
+                }
+                const audit = document.getElementById(`audit-touch-${i}`);
+                if (audit) {
+                    audit.textContent = 'Status: Ready to send or save as draft';
+                }
+            }
+
+            updateMailtoLinks();
             showToast('3-Touch Outreach Sequence Generated!');
         } catch (e) {
             showToast('Outreach error: ' + e.message, true);
@@ -1486,6 +1981,160 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Send single touch email
+    async function sendTouchEmail(touchNum) {
+        const leadId = outreachLeadSelect.value;
+        const recipient = document.getElementById(`email-recipient-${touchNum}`)?.value.trim() || '';
+        const subject = document.getElementById(`email-subject-input-${touchNum}`)?.value.trim() || '';
+        let body = '';
+        if (touchNum === 1) body = document.getElementById('email-body-text')?.value.trim() || '';
+        if (touchNum === 2) body = document.getElementById('email-day3-body')?.value.trim() || '';
+        if (touchNum === 3) body = document.getElementById('email-day7-body')?.value.trim() || '';
+
+        if (!body) {
+            showToast(`Please generate or write an email body for Touch ${touchNum} first!`, true);
+            return;
+        }
+        if (!recipient) {
+            showToast(`Please specify recipient email for Touch ${touchNum}!`, true);
+            return;
+        }
+
+        const sendBtn = document.querySelector(`.btn-send-step[data-touch="${touchNum}"]`);
+        if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.textContent = '✈️ Sending...';
+        }
+
+        try {
+            const res = await apiFetch(`${API_BASE}/ai/outreach/send`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    leadId: leadId ? parseInt(leadId, 10) : null,
+                    touchNumber: touchNum,
+                    recipientEmail: recipient,
+                    subject: subject,
+                    body: body
+                })
+            });
+            const data = await res.json();
+
+            const badge = document.getElementById(`status-touch-${touchNum}`);
+            if (badge) {
+                badge.className = 'email-status-badge status-sent';
+                badge.textContent = 'Sent';
+            }
+            const audit = document.getElementById(`audit-touch-${touchNum}`);
+            if (audit) {
+                audit.innerHTML = `<span style="color:var(--accent-green);">✓ Dispatched to <strong>${escapeHtml(recipient)}</strong> [Tracking: ${data.trackingId}]</span>`;
+            }
+
+            updateMailtoLinks();
+            showToast(`Touch ${touchNum} email sent to ${recipient}!`);
+        } catch (err) {
+            showToast(`Failed to send Touch ${touchNum}: ${err.message}`, true);
+        } finally {
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '✈️ Send Email';
+            }
+        }
+    }
+
+    // Save single touch draft
+    async function saveTouchDraft(touchNum, silent = false) {
+        const leadId = outreachLeadSelect.value;
+        const recipient = document.getElementById(`email-recipient-${touchNum}`)?.value.trim() || '';
+        const subject = document.getElementById(`email-subject-input-${touchNum}`)?.value.trim() || '';
+        let body = '';
+        if (touchNum === 1) body = document.getElementById('email-body-text')?.value.trim() || '';
+        if (touchNum === 2) body = document.getElementById('email-day3-body')?.value.trim() || '';
+        if (touchNum === 3) body = document.getElementById('email-day7-body')?.value.trim() || '';
+
+        if (!body && !subject) {
+            if (!silent) showToast(`No email content to save for Touch ${touchNum}!`, true);
+            return;
+        }
+
+        try {
+            await apiFetch(`${API_BASE}/ai/outreach/draft`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    leadId: leadId ? parseInt(leadId, 10) : null,
+                    touchNumber: touchNum,
+                    recipientEmail: recipient,
+                    subject: subject,
+                    body: body
+                })
+            });
+
+            // LocalStorage backup
+            localStorage.setItem(`caprae_draft_${leadId || 'def'}_touch_${touchNum}`, JSON.stringify({ recipient, subject, body, time: Date.now() }));
+
+            const badge = document.getElementById(`status-touch-${touchNum}`);
+            if (badge) {
+                badge.className = 'email-status-badge status-draft';
+                badge.textContent = 'Draft Saved';
+            }
+            const audit = document.getElementById(`audit-touch-${touchNum}`);
+            if (audit) {
+                audit.innerHTML = `<span style="color:var(--accent-gold);">💾 Saved as draft at ${new Date().toLocaleTimeString()}</span>`;
+            }
+
+            updateMailtoLinks();
+            if (!silent) showToast(`Touch ${touchNum} draft saved successfully!`);
+        } catch (err) {
+            if (!silent) showToast(`Draft error: ${err.message}`, true);
+        }
+    }
+
+    // Wire up step Send and Draft buttons
+    document.querySelectorAll('.btn-send-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const touch = parseInt(btn.getAttribute('data-touch'), 10);
+            sendTouchEmail(touch);
+        });
+    });
+
+    document.querySelectorAll('.btn-save-draft-step').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const touch = parseInt(btn.getAttribute('data-touch'), 10);
+            saveTouchDraft(touch);
+        });
+    });
+
+    // Save All Drafts
+    const btnSaveAllDrafts = document.getElementById('btn-save-all-drafts');
+    if (btnSaveAllDrafts) {
+        btnSaveAllDrafts.addEventListener('click', async () => {
+            for (let i = 1; i <= 3; i++) {
+                await saveTouchDraft(i, true);
+            }
+            showToast('All 3 touches saved as drafts!');
+        });
+    }
+
+    // Send Full Drip Sequence
+    const btnSendFullSequence = document.getElementById('btn-send-full-sequence');
+    if (btnSendFullSequence) {
+        btnSendFullSequence.addEventListener('click', async () => {
+            btnSendFullSequence.disabled = true;
+            btnSendFullSequence.textContent = '🚀 Queuing 3-Touch Drip...';
+
+            try {
+                for (let i = 1; i <= 3; i++) {
+                    await sendTouchEmail(i);
+                }
+                showToast('Full 3-Touch automated acquisition sequence dispatched!');
+            } catch (e) {
+                showToast('Drip sequence error: ' + e.message, true);
+            } finally {
+                btnSendFullSequence.disabled = false;
+                btnSendFullSequence.textContent = '🚀 Send Full Drip Sequence';
+            }
+        });
+    }
+
     // Copy Step buttons
     document.querySelectorAll('.btn-copy-step').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1494,16 +2143,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (targetElem) {
                 targetElem.select();
                 navigator.clipboard.writeText(targetElem.value);
-                showToast('Email copied to clipboard!');
+                showToast('Email body copied to clipboard!');
             }
         });
     });
 
     if (btnCopyFullSequence) {
         btnCopyFullSequence.addEventListener('click', () => {
-            const fullText = `=== TOUCH 1 (DAY 1) ===\nSUBJECT: ${emailSubjectLine.textContent}\n\n${emailBodyText.value}\n\n` +
-                             `=== TOUCH 2 (DAY 3) ===\nSUBJECT: ${emailSubjectLine2.textContent}\n\n${emailDay3Body.value}\n\n` +
-                             `=== TOUCH 3 (DAY 7) ===\nSUBJECT: Re: Permission to close file\n\n${emailDay7Body.value}`;
+            const sub1 = document.getElementById('email-subject-input-1')?.value || 'Confidential Inquiry';
+            const sub2 = document.getElementById('email-subject-input-2')?.value || 'Re: Valuation';
+            const sub3 = document.getElementById('email-subject-input-3')?.value || 'Re: Permission to close';
+            const fullText = `=== TOUCH 1 (DAY 1) ===\nTO: ${document.getElementById('email-recipient-1')?.value || ''}\nSUBJECT: ${sub1}\n\n${emailBodyText.value}\n\n` +
+                             `=== TOUCH 2 (DAY 3) ===\nTO: ${document.getElementById('email-recipient-2')?.value || ''}\nSUBJECT: ${sub2}\n\n${emailDay3Body.value}\n\n` +
+                             `=== TOUCH 3 (DAY 7) ===\nTO: ${document.getElementById('email-recipient-3')?.value || ''}\nSUBJECT: ${sub3}\n\n${emailDay7Body.value}`;
             navigator.clipboard.writeText(fullText);
             showToast('Full 3-touch sequence copied!');
         });
@@ -1511,10 +2163,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnDownloadSequence) {
         btnDownloadSequence.addEventListener('click', () => {
+            const sub1 = document.getElementById('email-subject-input-1')?.value || 'Confidential Inquiry';
+            const sub2 = document.getElementById('email-subject-input-2')?.value || 'Re: Valuation';
+            const sub3 = document.getElementById('email-subject-input-3')?.value || 'Re: Permission to close';
             const fullText = `CAPRAE CAPITAL PARTNERS - OUTREACH SEQUENCE\nTarget: ${outreachLeadSelect.options[outreachLeadSelect.selectedIndex]?.text || ''}\nDate: ${new Date().toLocaleDateString()}\n\n` +
-                             `========================================\nTOUCH 1 (DAY 1 - INITIAL INQUIRY)\nSUBJECT: ${emailSubjectLine.textContent}\n========================================\n\n${emailBodyText.value}\n\n` +
-                             `========================================\nTOUCH 2 (DAY 3 - VALUE MULTIPLE)\nSUBJECT: ${emailSubjectLine2.textContent}\n========================================\n\n${emailDay3Body.value}\n\n` +
-                             `========================================\nTOUCH 3 (DAY 7 - BREAK-UP / PERMISSION)\n========================================\n\n${emailDay7Body.value}`;
+                             `========================================\nTOUCH 1 (DAY 1 - INITIAL INQUIRY)\nTO: ${document.getElementById('email-recipient-1')?.value || ''}\nSUBJECT: ${sub1}\n========================================\n\n${emailBodyText.value}\n\n` +
+                             `========================================\nTOUCH 2 (DAY 3 - VALUE MULTIPLE)\nTO: ${document.getElementById('email-recipient-2')?.value || ''}\nSUBJECT: ${sub2}\n========================================\n\n${emailDay3Body.value}\n\n` +
+                             `========================================\nTOUCH 3 (DAY 7 - BREAK-UP / PERMISSION)\nTO: ${document.getElementById('email-recipient-3')?.value || ''}\nSUBJECT: ${sub3}\n========================================\n\n${emailDay7Body.value}`;
             const blob = new Blob([fullText], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1784,16 +2439,16 @@ document.addEventListener('DOMContentLoaded', () => {
         let debounceTimer;
         filterSearch.addEventListener('input', () => {
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(applyFilters, 250);
+            debounceTimer = setTimeout(() => applyFilters(true), 250);
         });
 
-        filterIndustry.addEventListener('change', applyFilters);
-        filterStatus.addEventListener('change', applyFilters);
-        filterPriority.addEventListener('change', applyFilters);
+        filterIndustry.addEventListener('change', () => applyFilters(true));
+        filterStatus.addEventListener('change', () => applyFilters(true));
+        filterPriority.addEventListener('change', () => applyFilters(true));
         filterMinScore.addEventListener('input', () => {
             scoreValLabel.textContent = filterMinScore.value;
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(applyFilters, 250);
+            debounceTimer = setTimeout(() => applyFilters(true), 250);
         });
 
         btnResetFilters.addEventListener('click', () => {
@@ -1803,8 +2458,16 @@ document.addEventListener('DOMContentLoaded', () => {
             filterPriority.value = '';
             filterMinScore.value = 0;
             scoreValLabel.textContent = '0';
-            applyFilters();
+            applyFilters(true);
         });
+
+        if (analyticsSortBy) {
+            analyticsSortBy.addEventListener('change', () => {
+                const sortVal = analyticsSortBy.value;
+                window.history.pushState({ tabId: 'analytics-tab', sortBy: sortVal }, '', `/pipeline-analytics?sortBy=${sortVal}`);
+                renderAnalyticsVisuals();
+            });
+        }
 
         paginationPageSize.addEventListener('change', () => {
             pageSize = parseInt(paginationPageSize.value, 10) || 10;

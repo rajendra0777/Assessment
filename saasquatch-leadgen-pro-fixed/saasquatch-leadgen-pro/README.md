@@ -48,18 +48,22 @@ As demonstrated by Caprae's in-house platform **SaaSquatch Leads** (`saasquatchl
 ### Option 1: Run locally (in-memory H2 database)
 
 ```bash
-# Optional locally. If SEED_PASSWORD is unset, a random password is generated and printed once in the startup log.
-export SEED_PASSWORD='choose-a-strong-password'
-export JWT_SECRET='at-least-32-random-characters'   # if unset, a random per-start key is used
+# Run with default credentials (admin / ADMIN)
+mvn spring-boot:run
+
+# Or customize credentials via environment variables:
+export SEED_PASSWORD='YourCustomPassword123'
+export JWT_SECRET='at-least-32-random-characters'
 mvn spring-boot:run
 ```
 
-(PowerShell: `$env:SEED_PASSWORD='...'; mvn spring-boot:run`)
+(PowerShell: `mvn spring-boot:run` or `$env:SEED_PASSWORD='YourPassword'; mvn spring-boot:run`)
 
-Then open:
-- **Web app:** http://localhost:8080
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
-- **Health:** http://localhost:8080/actuator/health
+Then open in your browser:
+- **Web App / Login:** http://localhost:8080/login
+- **Deal Pipeline:** http://localhost:8080/deal-pipeline
+- **Swagger API Docs:** http://localhost:8080/swagger-ui.html
+- **Actuator Health:** http://localhost:8080/actuator/health
 
 ### Option 2: Docker Compose with PostgreSQL
 
@@ -68,22 +72,39 @@ cp .env.example .env      # then edit the values; never commit .env
 docker compose up --build
 ```
 
-### Run the tests
+### Run the automated test suite
 
 ```bash
 mvn test
 ```
 
-### Signing in
+### 🔐 Signing In & Default Credentials
 
-Two demo accounts are created on first start, both using the password you set in `SEED_PASSWORD`:
+The application is pre-seeded with two bootstrap accounts with default password **`ADMIN`** (customizable via `SEED_PASSWORD`):
 
-| Username | Role | Can do |
+| Username | Default Password | Role | Permissions |
+|---|---|---|---|
+| **`admin`** | **`ADMIN`** | `ROLE_ADMIN` | Full admin privileges (delete deals, register accounts, security management) |
+| **`searcher`** | **`ADMIN`** | `ROLE_OPERATOR` | Sourcing, pipeline deal updates, AI Deal Copilot, outreach dispatch |
+
+> **Login Page:** Navigate to [http://localhost:8080/login](http://localhost:8080/login) and authenticate using the credentials listed in the table above. In accordance with enterprise security practices, credentials are not pre-filled or printed in the UI.
+>
+> Each user also has a dedicated personal API key, returned by `POST /api/auth/login` and viewable in the **API & Docs** tab. Pass `X-API-KEY: <your_key>` for machine-to-machine integrations.
+
+---
+
+## 🌐 Dynamic URL Endpoints & Deep-Linking
+
+The platform features full dynamic Single-Page Application (SPA) routing with zero page reloads and browser history (`popstate`) synchronization:
+
+| Capability | Dynamic URL Pattern | Description & Functionality |
 |---|---|---|
-| `admin` | `ROLE_ADMIN` | Everything, including deleting deals and creating accounts |
-| `searcher` | `ROLE_OPERATOR` | Sourcing, pipeline updates, AI tools, exports |
-
-There are no default or shared passwords in this repository. Each user has a personal API key, returned by `POST /api/auth/login` and shown in the app's API portal. Send it as `X-API-KEY: <your key>` for machine access.
+| **Stage Filter** | `/deal-pipeline/<stage>` | Filters deals by status in real-time (e.g. `/deal-pipeline/loi-submitted`, `/deal-pipeline/qualified`, `/deal-pipeline/sourced`, `/deal-pipeline/diligence`, `/deal-pipeline/closed`). |
+| **Deal Deep-Link** | `/deal-pipeline/<deal-id>` | Direct link to a specific deal (e.g. `/deal-pipeline/CP-0005` or `/deal-pipeline/1`). Automatically pops open the full company growth thesis and financial modal. |
+| **Query Filters** | `/deal-pipeline?q=...&industry=...` | Dynamic real-time query string reflection for search keywords, industry tags, deal priority, and minimum deal score. |
+| **Outreach Studio** | `/outreach-studio/<deal-id>` | Pre-selects the deal target, populates verified founder contacts, and generates multi-touch outreach sequences. |
+| **AI Copilot Subtabs** | `/ai-deal-copilot/<subtab>` | Direct deep-linking to Copilot modules: `/ai-deal-copilot/rag`, `/ai-deal-copilot/market-research`, `/ai-deal-copilot/financial-model`. |
+| **Pipeline Analytics** | `/pipeline-analytics?sortBy=...` | Direct route with dynamic sorting parameter (e.g. `?sortBy=ebitda` or `?sortBy=arr`). |
 
 ---
 
