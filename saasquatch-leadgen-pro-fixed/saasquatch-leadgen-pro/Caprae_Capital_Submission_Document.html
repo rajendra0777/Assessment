@@ -48,12 +48,10 @@
         /* Cover Page */
         .cover-page {
             page-break-after: always;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 40px 20px 30px 20px;
+            box-sizing: border-box;
+            padding: 35px 20px 20px 20px;
             border-top: 6px solid #b45309;
+            margin-bottom: 0;
         }
 
         .cover-badge {
@@ -178,7 +176,7 @@
 
         /* Section divider */
         .section-break {
-            page-break-after: always;
+            display: none;
         }
 
         /* Cards and Callouts */
@@ -214,6 +212,10 @@
             border-collapse: collapse;
             margin: 12px 0 18px 0;
             font-size: 9pt;
+            page-break-inside: auto;
+        }
+
+        tr {
             page-break-inside: avoid;
         }
 
@@ -433,8 +435,6 @@
         </tbody>
     </table>
 
-    <div class="section-break"></div>
-
     <!-- ======================================================== -->
     <!-- SECTION 2: FUNCTIONALITY DEEP DIVE (WHY, HOW, WHAT) -->
     <!-- ======================================================== -->
@@ -525,8 +525,6 @@
         </div>
     </div>
 
-    <div class="section-break"></div>
-
     <!-- ======================================================== -->
     <!-- SECTION 3: BUSINESS UNDERSTANDING QUESTIONS -->
     <!-- ======================================================== -->
@@ -564,8 +562,6 @@
     <p>
         Moreover, Caprae is redefining the human capital equation in private equity. By valuing intellectual horsepower, resilience, and operational empathy over academic pedigrees or corporate tenure, Caprae creates a high-performance ecosystem where operators and engineers build alongside each other. This operational-first holding model represents the future of private equity: leaner, faster, technologically self-sufficient, and optimized for long-term compound value creation.
     </p>
-
-    <div class="section-break"></div>
 
     <!-- ======================================================== -->
     <!-- SECTION 4: CANDIDATE PROFILE & EXPECTATIONS -->
